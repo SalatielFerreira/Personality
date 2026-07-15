@@ -5,7 +5,7 @@
   "use strict";
 
   // Versão do app — manter igual em version.json e sw.js (CACHE_VERSION).
-  const APP_VERSION = "1.6.4";
+  const APP_VERSION = "1.6.5";
 
   // ---- Estado ------------------------------------------------------------
   const state = {
@@ -674,6 +674,8 @@
     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>`;
   const MOON_SVG =
     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>`;
+  const SAVE_SVG =
+    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>`;
 
   VIEWS.perfil = async function () {
     const u = state.user;
@@ -705,9 +707,12 @@
         </div>
       </div>
 
-      <div class="card tap" id="prof-area">
-        <div class="row between"><h3>Área do Professor</h3><span>›</span></div>
-        <div class="muted small">Importar planilha de treino, gerenciar o plano</div>
+      <div class="card tap prof-card" id="prof-area">
+        <div>
+          <h3>Área do Professor</h3>
+          <div class="muted small">Importar planilha de treino, gerenciar o plano</div>
+        </div>
+        <span class="chev">›</span>
       </div>
 
       <div class="card">
@@ -728,7 +733,7 @@
           <div class="muted small" style="margin-top:6px">Mín. 8 caracteres, com maiúscula, minúscula, número e caractere especial.</div>
         </div>
         <div class="error-text" id="cp-error"></div>
-        <button class="btn" id="cp-save">Salvar nova senha</button>
+        <button class="btn" id="cp-save">${SAVE_SVG} Salvar nova senha</button>
       </div>
 
       <button class="btn danger" id="logout">${DOOR_SVG} Sair da conta</button>

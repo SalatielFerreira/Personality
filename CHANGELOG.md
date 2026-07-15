@@ -5,6 +5,12 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.6.5] — 2026-07-15
+
+### Ajustes do Perfil
+- Ícone de **disquete** no botão "Salvar nova senha".
+- Seta (›) do card "Área do Professor" **centralizada na vertical**.
+
 ## [1.6.4] — 2026-07-15
 
 ### Ajuste

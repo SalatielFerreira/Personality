@@ -241,6 +241,10 @@ textarea.input, textarea.form-input { min-height: 70px; resize: vertical; }
 /* Ícone dentro de botões (ex.: porta no "Sair da conta") */
 .btn svg { width: 18px; height: 18px; }
 
+/* Card "Área do Professor": seta centralizada na vertical */
+.prof-card { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.prof-card .chev { font-size: 1.6rem; color: var(--text2); line-height: 1; flex: none; }
+
 /* ---- Progress / stats ------------------------------------------------- */
 .progress { height: 12px; border-radius: 8px; background: var(--glass-input); overflow: hidden; }
 .progress > span { display: block; height: 100%; background: var(--grad); border-radius: 8px; transition: width .4s ease; }
