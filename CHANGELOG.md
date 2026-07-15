@@ -5,6 +5,14 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.3.2] — 2026-07-15
+
+### Ajustes visuais
+- Título da barra superior **duas vezes maior**, empilhado (ELTECH grande + PERSONALITY
+  menor embaixo) e centralizado; barras engrossadas para 80px.
+- **Home:** nome do usuário reduzido em 1/3 e saudação ("Boa tarde,") agora em
+  branco/preto conforme o tema, diferenciando-se da data.
+
 ## [1.3.1] — 2026-07-15
 
 ### Data/hora

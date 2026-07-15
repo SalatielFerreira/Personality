@@ -5,7 +5,7 @@
   "use strict";
 
   // Versão do app — manter igual em version.json e sw.js (CACHE_VERSION).
-  const APP_VERSION = "1.3.1";
+  const APP_VERSION = "1.3.2";
 
   // ---- Estado ------------------------------------------------------------
   const state = {
@@ -364,8 +364,8 @@
       <div class="top-header">
         <div>
           <div class="muted small" id="home-clock">${bsb.dateStr}</div>
-          <div class="muted small">${greet},</div>
-          <h1>${esc(first)}</h1>
+          <div class="home-greet small">${greet},</div>
+          <h1 class="home-name">${esc(first)}</h1>
         </div>
       </div>
       ${planCard}
