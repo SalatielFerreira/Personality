@@ -30,9 +30,28 @@
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js").catch((e) =>
-          console.warn("SW não registrado:", e)
-        );
+        navigator.serviceWorker.register("./sw.js").then((reg) => {
+          // Detecta uma nova versão instalada enquanto o app está aberto.
+          reg.addEventListener("updatefound", () => {
+            const nw = reg.installing;
+            if (!nw) return;
+            nw.addEventListener("statechange", () => {
+              if (nw.state === "installed" && navigator.serviceWorker.controller) {
+                if (window.PersonalityUpdate) {
+                  window.PersonalityUpdate(() => nw.postMessage("SKIP_WAITING"));
+                }
+              }
+            });
+          });
+        }).catch((e) => console.warn("SW não registrado:", e));
+
+        // Recarrega quando a nova versão assume o controle.
+        let reloaded = false;
+        navigator.serviceWorker.addEventListener("controllerchange", () => {
+          if (reloaded) return;
+          reloaded = true;
+          location.reload();
+        });
       });
     }
   </script>

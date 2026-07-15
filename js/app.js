@@ -4,6 +4,9 @@
 (function () {
   "use strict";
 
+  // Versão do app — manter igual em version.json e sw.js (CACHE_VERSION).
+  const APP_VERSION = "1.1.0";
+
   // ---- Estado ------------------------------------------------------------
   const state = {
     user: null,
@@ -676,7 +679,7 @@
       </div>
 
       <button class="btn danger" id="logout">Sair da conta</button>
-      <p class="center muted small" style="margin-top:14px">ELTECH Personality · v1.0.0</p>`,
+      <p class="center muted small" style="margin-top:14px">ELTECH Personality · v${APP_VERSION}</p>`,
       { active: "perfil" }
     );
 
@@ -912,6 +915,24 @@
   function emptyState(icon, title, text) {
     return `<div class="empty"><div class="big">${icon}</div><h3>${esc(title)}</h3><p>${esc(text)}</p></div>`;
   }
+
+  // Banner "Nova versão disponível" (acionado pelo service worker).
+  function showUpdateBanner(onUpdate) {
+    if (document.getElementById("update-banner")) return;
+    const bar = document.createElement("div");
+    bar.id = "update-banner";
+    bar.className = "update-banner glass";
+    bar.innerHTML = `<span>✨ Nova versão disponível</span>
+      <button class="btn xs" id="ub-btn">Atualizar</button>`;
+    document.body.appendChild(bar);
+    requestAnimationFrame(() => bar.classList.add("show"));
+    document.getElementById("ub-btn").addEventListener("click", (e) => {
+      e.currentTarget.textContent = "Atualizando…";
+      e.currentTarget.disabled = true;
+      onUpdate();
+    });
+  }
+  window.PersonalityUpdate = showUpdateBanner;
 
   function bindPasswordToggles() {
     qsa(".pass-toggle, .toggle-pass").forEach((btn) =>

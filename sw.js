@@ -1,11 +1,14 @@
 /* ELTECH Personality - Service Worker
- * Estratégia:
- *  - App shell (HTML/CSS/JS/ícones): cache-first, atualizado em background.
- *  - CDN (SheetJS): stale-while-revalidate, para o import de Excel funcionar offline.
- *  Para publicar uma nova versão do app, incremente CACHE_VERSION.
+ * Estratégia network-first (igual ao ELTECH): quando há internet, sempre busca
+ * a versão mais nova dos arquivos do app; sem internet, usa o cache (offline).
+ * Bibliotecas externas (SheetJS, fontes) usam cache-first.
+ *
+ * AO PUBLICAR UMA NOVA VERSÃO: incremente CACHE_VERSION (igual em version.json
+ * e em js/app.js -> APP_VERSION). Isso troca o cache e dispara o aviso
+ * "Nova versão disponível" para quem já está com o app aberto.
  */
-const CACHE_VERSION = "v1.0.0";
-const CACHE_NAME = `eltech-personality-${CACHE_VERSION}`;
+const CACHE_VERSION = "1.1.0";
+const CACHE_NAME = `eltech-personality-v${CACHE_VERSION}`;
 
 const APP_SHELL = [
   "./",
@@ -16,6 +19,7 @@ const APP_SHELL = [
   "./js/excel.js",
   "./js/app.js",
   "./manifest.json",
+  "./version.json",
   "./assets/icon.svg",
   "./assets/icon-maskable.svg"
 ];
@@ -24,20 +28,28 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL))
   );
-  self.skipWaiting();
+  // NÃO chamamos skipWaiting() aqui: o novo SW fica em espera até o usuário
+  // tocar em "Atualizar" (ver o handler de mensagem abaixo).
 });
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(
-        keys
-          .filter((k) => k.startsWith("eltech-personality-") && k !== CACHE_NAME)
-          .map((k) => caches.delete(k))
+    caches
+      .keys()
+      .then((keys) =>
+        Promise.all(
+          keys
+            .filter((k) => k.startsWith("eltech-personality-") && k !== CACHE_NAME)
+            .map((k) => caches.delete(k))
+        )
       )
-    )
+      .then(() => self.clients.claim())
   );
-  self.clients.claim();
+});
+
+// O app envia esta mensagem quando o usuário confirma a atualização.
+self.addEventListener("message", (event) => {
+  if (event.data === "SKIP_WAITING") self.skipWaiting();
 });
 
 self.addEventListener("fetch", (event) => {
@@ -46,27 +58,10 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(request.url);
 
-  // Bibliotecas externas (SheetJS): stale-while-revalidate.
-  if (url.origin !== self.location.origin) {
+  // Mesma origem (arquivos do app): network-first com fallback para cache.
+  if (url.origin === self.location.origin) {
     event.respondWith(
-      caches.open(CACHE_NAME).then(async (cache) => {
-        const cached = await cache.match(request);
-        const network = fetch(request)
-          .then((resp) => {
-            if (resp && resp.status === 200) cache.put(request, resp.clone());
-            return resp;
-          })
-          .catch(() => cached);
-        return cached || network;
-      })
-    );
-    return;
-  }
-
-  // App shell / navegação: cache-first com atualização em background.
-  event.respondWith(
-    caches.match(request).then((cached) => {
-      const network = fetch(request)
+      fetch(request)
         .then((resp) => {
           if (resp && resp.status === 200 && resp.type === "basic") {
             const copy = resp.clone();
@@ -74,11 +69,29 @@ self.addEventListener("fetch", (event) => {
           }
           return resp;
         })
-        .catch(() => {
-          // Se for uma navegação e estiver offline, devolve o app shell.
-          if (request.mode === "navigate") return caches.match("./index.html");
-        });
-      return cached || network;
+        .catch(() =>
+          caches.match(request).then((cached) => {
+            if (cached) return cached;
+            if (request.mode === "navigate") return caches.match("./index.html");
+          })
+        )
+    );
+    return;
+  }
+
+  // Recursos externos (SheetJS, Google Fonts): cache-first.
+  event.respondWith(
+    caches.match(request).then((cached) => {
+      if (cached) return cached;
+      return fetch(request)
+        .then((resp) => {
+          if (resp && resp.status === 200) {
+            const copy = resp.clone();
+            caches.open(CACHE_NAME).then((c) => c.put(request, copy));
+          }
+          return resp;
+        })
+        .catch(() => cached);
     })
   );
 });
