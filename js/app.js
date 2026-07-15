@@ -5,7 +5,7 @@
   "use strict";
 
   // Versão do app — manter igual em version.json e sw.js (CACHE_VERSION).
-  const APP_VERSION = "1.6.0";
+  const APP_VERSION = "1.6.1";
 
   // ---- Estado ------------------------------------------------------------
   const state = {
@@ -1142,7 +1142,7 @@
     const bar = document.createElement("div");
     bar.id = "update-banner";
     bar.className = "update-banner glass";
-    bar.innerHTML = `<span>✨ Nova versão disponível</span>
+    bar.innerHTML = `<span>Nova versão disponível</span>
       <button class="btn xs" id="ub-btn">Atualizar</button>`;
     document.body.appendChild(bar);
     requestAnimationFrame(() => bar.classList.add("show"));
