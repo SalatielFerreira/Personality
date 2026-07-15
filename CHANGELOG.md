@@ -5,6 +5,15 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.3.0] — 2026-07-15
+
+### Cabeçalho e Home
+- **Título "ELTECH Personality" maior e centralizado** na barra superior.
+- Barras do **topo e do rodapé com a mesma altura** (72px).
+- **Home:** removida a mãozinha 👋; agora mostra a **data e hora de Brasília**
+  (dd/mm/aaaa, hh:mm) acima da saudação, atualizando sozinha.
+- Removido o texto "Dados salvos no aparelho".
+
 ## [1.2.1] — 2026-07-15
 
 ### Ícones da navegação

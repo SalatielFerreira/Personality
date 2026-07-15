@@ -34,8 +34,9 @@
   --rx: 11px;
   --shadow: 0 18px 50px rgba(0, 0, 0, .45);
   --gap: 16px;
-  --nav-h: 70px;
-  --top-h: 58px;
+  /* Barras do topo e do rodapé com a MESMA altura */
+  --nav-h: 72px;
+  --top-h: 72px;
   --blur: blur(18px) saturate(140%);
   --font: "Sora", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
@@ -241,15 +242,16 @@ textarea.input, textarea.form-input { min-height: 70px; resize: vertical; }
 .top-bar {
   position: fixed; top: 0; left: 0; right: 0; z-index: 45;
   height: calc(var(--top-h) + env(safe-area-inset-top));
-  padding: env(safe-area-inset-top) 18px 0;
-  display: flex; align-items: center; justify-content: space-between;
+  padding: env(safe-area-inset-top) 16px 0;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
   border-bottom: 1px solid var(--stroke);
 }
-.tb-brand { font-weight: 800; font-size: 1.2rem; letter-spacing: 1.5px; }
+.tb-spacer { width: 42px; flex: none; }
+.tb-brand { flex: 1; text-align: center; font-weight: 800; font-size: 1.55rem; letter-spacing: 1.5px; white-space: nowrap; }
 .tb-brand .grad-text { letter-spacing: 1.5px; }
-.tb-brand .tb-sub { font-weight: 600; color: var(--text2); font-size: .95rem; letter-spacing: 2px; margin-left: 3px; }
+.tb-brand .tb-sub { font-weight: 600; color: var(--text2); font-size: 1.05rem; letter-spacing: 1.5px; margin-left: 4px; }
 .help-btn {
-  width: 38px; height: 38px; border-radius: 50%; flex: none;
+  width: 42px; height: 42px; border-radius: 50%; flex: none;
   border: 1px solid var(--stroke-strong); background: var(--glass-2);
   -webkit-backdrop-filter: var(--blur); backdrop-filter: var(--blur);
   color: var(--text); font-weight: 800; font-size: 1.05rem; cursor: pointer;

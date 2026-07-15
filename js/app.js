@@ -5,7 +5,7 @@
   "use strict";
 
   // Versão do app — manter igual em version.json e sw.js (CACHE_VERSION).
-  const APP_VERSION = "1.2.1";
+  const APP_VERSION = "1.3.0";
 
   // ---- Estado ------------------------------------------------------------
   const state = {
@@ -124,6 +124,7 @@
 
   function topBar() {
     return `<header class="top-bar glass">
+      <span class="tb-spacer"></span>
       <div class="tb-brand"><span class="grad-text">ELTECH</span><span class="tb-sub">Personality</span></div>
       <button class="help-btn" id="help-btn" aria-label="Ajuda" title="Ajuda">?</button>
     </header>`;
@@ -326,8 +327,8 @@
   VIEWS.home = async function () {
     await loadPlan();
     const first = state.user.name.split(" ")[0];
-    const hour = new Date().getHours();
-    const greet = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite";
+    const bsb = brasiliaNow();
+    const greet = bsb.hour < 12 ? "Bom dia" : bsb.hour < 18 ? "Boa tarde" : "Boa noite";
 
     let planCard;
     if (!state.plan) {
@@ -362,10 +363,10 @@
       `
       <div class="top-header">
         <div>
+          <div class="muted small" id="home-clock">${bsb.dateStr}</div>
           <div class="muted small">${greet},</div>
-          <h1>${esc(first)} 👋</h1>
+          <h1>${esc(first)}</h1>
         </div>
-        ${onlineBadge()}
       </div>
       ${planCard}
       <div class="grid-2">
@@ -376,6 +377,8 @@
       </div>`,
       { active: "home" }
     );
+
+    startHomeClock();
 
     const go = qs("#go-prof");
     if (go) go.addEventListener("click", () => navigate("professor"));
@@ -935,6 +938,26 @@
   // ======================================================================
   function emptyState(icon, title, text) {
     return `<div class="empty"><div class="big">${icon}</div><h3>${esc(title)}</h3><p>${esc(text)}</p></div>`;
+  }
+
+  // Data e hora no fuso de Brasília (dd/mm/aaaa, hh:mm) + hora p/ a saudação.
+  function brasiliaNow() {
+    const now = new Date();
+    const tz = "America/Sao_Paulo";
+    const d = new Intl.DateTimeFormat("pt-BR", { timeZone: tz, day: "2-digit", month: "2-digit", year: "numeric" }).format(now);
+    const t = new Intl.DateTimeFormat("pt-BR", { timeZone: tz, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(now);
+    const hour = Number(new Intl.DateTimeFormat("en-GB", { timeZone: tz, hour: "numeric", hourCycle: "h23" }).format(now));
+    return { dateStr: `${d}, ${t}`, hour };
+  }
+
+  let homeClockTimer = null;
+  function startHomeClock() {
+    if (homeClockTimer) clearInterval(homeClockTimer);
+    homeClockTimer = setInterval(() => {
+      const el = document.getElementById("home-clock");
+      if (!el) { clearInterval(homeClockTimer); homeClockTimer = null; return; }
+      el.textContent = brasiliaNow().dateStr;
+    }, 20000);
   }
 
   // ---- Ajuda por página (botão ? da barra superior) ---------------------
