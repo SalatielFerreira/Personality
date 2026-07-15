@@ -229,7 +229,7 @@ textarea.input, textarea.form-input { min-height: 70px; resize: vertical; }
 
 .switch { position: relative; display: inline-block; width: 54px; height: 30px; flex: none; cursor: pointer; }
 .switch input { position: absolute; opacity: 0; width: 0; height: 0; }
-.switch-track { position: absolute; inset: 0; border-radius: 999px; background: var(--glass-input); border: 1px solid var(--stroke-strong); transition: background .2s, border-color .2s; }
+.switch-track { position: absolute; inset: 0; border-radius: 999px; background: var(--grad); border: 1px solid transparent; transition: background .2s, border-color .2s; }
 .switch-knob { position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; transition: transform .2s, background .2s; }
 .switch-knob .ic-sun, .switch-knob .ic-moon { display: none; align-items: center; justify-content: center; }
 .switch-knob svg { width: 13px; height: 13px; color: #0A0E13; }

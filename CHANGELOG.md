@@ -5,6 +5,11 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.4.3] — 2026-07-15
+
+### Tema
+- O interruptor de tema agora tem o **fundo esverdeado nos dois estados** (claro e escuro).
+
 ## [1.4.2] — 2026-07-15
 
 ### Tipografia

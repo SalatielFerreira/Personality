@@ -5,7 +5,7 @@
   "use strict";
 
   // Versão do app — manter igual em version.json e sw.js (CACHE_VERSION).
-  const APP_VERSION = "1.4.2";
+  const APP_VERSION = "1.4.3";
 
   // ---- Estado ------------------------------------------------------------
   const state = {
