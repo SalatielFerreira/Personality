@@ -15,7 +15,7 @@
   /* Marca esportiva */
   --primary: #00D26A;
   --primary-2: #00B4FF;
-  --primary-ink: #04120a;
+  --primary-ink: #FFFFFF; /* texto sobre fundo verde: sempre branco */
   --grad: linear-gradient(135deg, #00D26A, #00B4FF);
   --info: #00B4FF;
   --green: #00D26A;

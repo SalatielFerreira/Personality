@@ -5,6 +5,11 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.6.4] — 2026-07-15
+
+### Ajuste
+- Texto sobre fundo verde (botões, abas ativas, chips, ✔ de série) agora é **branco**.
+
 ## [1.6.3] — 2026-07-15
 
 ### Correção
