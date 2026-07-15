@@ -5,7 +5,7 @@
   "use strict";
 
   // Versão do app — manter igual em version.json e sw.js (CACHE_VERSION).
-  const APP_VERSION = "1.5.2";
+  const APP_VERSION = "1.6.0";
 
   // ---- Estado ------------------------------------------------------------
   const state = {
@@ -65,7 +65,7 @@
     if (meta) meta.setAttribute("content", theme === "light" ? "#F4F6FB" : "#0D1117");
     localStorage.setItem("personality.theme", theme);
   }
-  function currentTheme() { return localStorage.getItem("personality.theme") || "dark"; }
+  function currentTheme() { return localStorage.getItem("personality.theme") || "light"; }
 
   // ---- Som / vibração ----------------------------------------------------
   let audioCtx = null;
@@ -265,7 +265,6 @@
       }
     }
     qs("#l-submit").addEventListener("click", doLogin);
-    qs("#l-pass").addEventListener("keydown", (e) => { if (e.key === "Enter") doLogin(); });
   }
 
   function bindRegister() {
@@ -1224,7 +1223,7 @@
   //  Boot
   // ======================================================================
   async function boot() {
-    applyTheme("light"); // sempre inicia no tema claro
+    applyTheme(currentTheme()); // mantém o tema salvo (padrão: claro) ao recarregar
     try {
       state.user = await Auth.currentUser();
     } catch (e) {
@@ -1233,9 +1232,30 @@
     window.addEventListener("hashchange", route);
     window.addEventListener("online", () => { const b = qs(".online-badge"); if (b) route(); });
     window.addEventListener("offline", () => { const b = qs(".online-badge"); if (b) route(); });
+    document.addEventListener("keydown", handleEnterKey);
     route();
     // Mostra o convite para instalar sempre que abrir (se ainda não instalado).
     setTimeout(() => { if (!isStandalone()) showInstallBanner(); }, 800);
+  }
+
+  // Enter (celular e PC) = confirmar / entrar / ok.
+  function handleEnterKey(e) {
+    if (e.key !== "Enter" || e.shiftKey) return;
+    const ae = document.activeElement;
+    if (ae && ae.tagName === "TEXTAREA") return; // textarea: quebra de linha normal
+
+    // 1) Se há um modal aberto, aciona o botão principal (Sim/Ok/Entrar).
+    const modalBtn = document.querySelector(
+      "#modal-root .modal .btn:not(.secondary):not([disabled])"
+    );
+    if (modalBtn) { e.preventDefault(); modalBtn.click(); return; }
+
+    // 2) Aciona o botão principal do bloco (card/formulário) onde está o cursor.
+    if (!ae) return;
+    const scope = ae.closest(".card, .login-form");
+    if (!scope) return;
+    const btn = scope.querySelector(".btn:not(.secondary):not(.ghost):not([disabled])");
+    if (btn) { e.preventDefault(); btn.click(); }
   }
 
   document.addEventListener("DOMContentLoaded", boot);

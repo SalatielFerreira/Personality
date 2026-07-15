@@ -5,6 +5,15 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.6.0] — 2026-07-15
+
+### Comportamento
+- Ao **recarregar a página**, o app fica intacto: mantém a **página atual** e o **tema**
+  (o tema agora é lembrado; claro continua sendo o padrão para quem nunca escolheu).
+- O **"voltar" do celular** navega passo a passo pelas telas visitadas (em vez de fechar o app).
+- A tecla **Enter** (celular e PC) funciona como **confirmar/entrar/ok**: aciona o botão
+  principal do formulário/modal em foco (login, cadastro, alterar senha, confirmações).
+
 ## [1.5.2] — 2026-07-15
 
 ### Ajuste
