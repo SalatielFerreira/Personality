@@ -5,7 +5,7 @@
   "use strict";
 
   // Versão do app — manter igual em version.json e sw.js (CACHE_VERSION).
-  const APP_VERSION = "1.5.0";
+  const APP_VERSION = "1.5.1";
 
   // ---- Estado ------------------------------------------------------------
   const state = {
@@ -326,7 +326,7 @@
   // ---- Home / Dashboard --------------------------------------------------
   VIEWS.home = async function () {
     await loadPlan();
-    const first = state.user.name.split(" ")[0];
+    const first = state.user.name;
     const bsb = localNow();
     const greet = bsb.hour < 12 ? "Bom dia" : bsb.hour < 18 ? "Boa tarde" : "Boa noite";
 

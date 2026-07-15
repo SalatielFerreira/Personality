@@ -7,7 +7,7 @@
  * e em js/app.js -> APP_VERSION). Isso troca o cache e dispara o aviso
  * "Nova versão disponível" para quem já está com o app aberto.
  */
-const CACHE_VERSION = "1.5.0";
+const CACHE_VERSION = "1.5.1";
 const CACHE_NAME = `eltech-personality-v${CACHE_VERSION}`;
 
 const APP_SHELL = [

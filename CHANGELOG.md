@@ -5,6 +5,12 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.5.1] — 2026-07-15
+
+### Correção
+- A Home agora mostra o **nome completo** do usuário (antes exibia só o primeiro nome,
+  o que dava impressão de que a alteração do nome não tinha sido aplicada).
+
 ## [1.5.0] — 2026-07-15
 
 ### Tema, instalação e senha
