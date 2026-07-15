@@ -5,6 +5,11 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.5.2] — 2026-07-15
+
+### Ajuste
+- Removido o emoji de celular do banner "Instale o ELTECH Personality".
+
 ## [1.5.1] — 2026-07-15
 
 ### Correção
