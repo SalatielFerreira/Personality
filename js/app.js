@@ -5,7 +5,7 @@
   "use strict";
 
   // Versão do app — manter igual em version.json e sw.js (CACHE_VERSION).
-  const APP_VERSION = "1.2.0";
+  const APP_VERSION = "1.2.1";
 
   // ---- Estado ------------------------------------------------------------
   const state = {
@@ -129,19 +129,29 @@
     </header>`;
   }
 
+  // Ícones de linha (estilo Lucide) — herdam a cor via currentColor,
+  // então ficam brancos no tema escuro e pretos no tema claro.
+  const NAV_ICONS = {
+    home: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h3v-6h6v6h3a1 1 0 0 0 1-1V9.5"/></svg>`,
+    treinos: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8v8M8 6v12M16 6v12M20 8v8M8 12h8"/></svg>`,
+    evolucao: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V4M4 20h16"/><polyline points="7 14 11 10 14 13 20 6.5"/><polyline points="20 10 20 6.5 16.5 6.5"/></svg>`,
+    agenda: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 3v3M16 3v3"/></svg>`,
+    perfil: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg>`
+  };
+
   function navBar(active) {
     const items = [
-      { key: "home", ico: "🏠", label: "Home" },
-      { key: "treinos", ico: "🏋️", label: "Treinos" },
-      { key: "evolucao", ico: "📈", label: "Evolução" },
-      { key: "agenda", ico: "📅", label: "Agenda" },
-      { key: "perfil", ico: "👤", label: "Perfil" }
+      { key: "home", label: "Home" },
+      { key: "treinos", label: "Treinos" },
+      { key: "evolucao", label: "Evolução" },
+      { key: "agenda", label: "Agenda" },
+      { key: "perfil", label: "Perfil" }
     ];
     return `<nav class="bottom-nav">${items
       .map(
         (i) =>
           `<a href="#/${i.key}" class="${active === i.key ? "active" : ""}">
-            <span class="nav-ico">${i.ico}</span><span>${i.label}</span></a>`
+            <span class="nav-ico">${NAV_ICONS[i.key]}</span><span>${i.label}</span></a>`
       )
       .join("")}</nav>`;
   }

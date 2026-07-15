@@ -5,6 +5,13 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.2.1] — 2026-07-15
+
+### Ícones da navegação
+- Ícones da barra inferior trocados de emoji para **SVGs de linha** (estilo Lucide).
+- Agora seguem o tema: **brancos** no tema escuro e **pretos** no tema claro; a aba
+  ativa fica em **verde**.
+
 ## [1.2.0] — 2026-07-15
 
 ### Barra superior e ajuda (estilo ELTECH)
