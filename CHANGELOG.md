@@ -5,6 +5,16 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.7.0] — 2026-07-15
+
+### Ficha do aluno (novo)
+- Novo campo **"Dados do aluno"** no Perfil (acima da Área do Professor) que abre a
+  **ficha do aluno** — só leitura, com 6 seções: dados pessoais, objetivos, histórico de
+  saúde, hábitos de vida, avaliação antropométrica (circunferências e dobras) e composição corporal.
+- Os dados vêm de um **Excel preenchido pelo personal**. Na Área do Professor há o botão para
+  **baixar o modelo** (com aba de instruções) e para **importar a ficha**.
+- Campos **sem dado no Excel não aparecem** para o aluno; seções vazias são ocultadas.
+
 ## [1.6.5] — 2026-07-15
 
 ### Ajustes do Perfil

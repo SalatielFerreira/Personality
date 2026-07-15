@@ -241,9 +241,18 @@ textarea.input, textarea.form-input { min-height: 70px; resize: vertical; }
 /* Ícone dentro de botões (ex.: porta no "Sair da conta") */
 .btn svg { width: 18px; height: 18px; }
 
-/* Card "Área do Professor": seta centralizada na vertical */
+/* Card "Área do Professor" / "Dados do aluno": seta centralizada na vertical */
 .prof-card { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .prof-card .chev { font-size: 1.6rem; color: var(--text2); line-height: 1; flex: none; }
+
+/* Ficha do aluno (só leitura) */
+.ficha-row { display: flex; justify-content: space-between; gap: 14px; padding: 9px 0; border-top: 1px solid var(--stroke); }
+.ficha-row:first-child { border-top: none; }
+.ficha-k { color: var(--text2); font-size: .9rem; }
+.ficha-v { font-weight: 700; text-align: right; }
+.ficha-sub { margin: 14px 0 2px; font-weight: 700; color: var(--primary); font-size: .82rem; text-transform: uppercase; letter-spacing: .5px; }
+.ficha-sub:first-child { margin-top: 4px; }
+.ficha-objs { display: flex; flex-wrap: wrap; gap: 8px; }
 
 /* ---- Progress / stats ------------------------------------------------- */
 .progress { height: 12px; border-radius: 8px; background: var(--glass-input); overflow: hidden; }

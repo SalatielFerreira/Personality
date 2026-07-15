@@ -5,7 +5,7 @@
   "use strict";
 
   // Versão do app — manter igual em version.json e sw.js (CACHE_VERSION).
-  const APP_VERSION = "1.6.5";
+  const APP_VERSION = "1.7.0";
 
   // ---- Estado ------------------------------------------------------------
   const state = {
@@ -665,6 +665,72 @@
     );
   };
 
+  // ---- Dados do aluno (ficha, só leitura) -------------------------------
+  function isMarked(v) {
+    const s = (v == null ? "" : String(v)).trim().toLowerCase()
+      .normalize("NFD").replace(/[̀-ͯ]/g, "");
+    return s !== "" && !["nao", "n", "0", "false", "-", "x nao"].includes(s);
+  }
+
+  function fichaRow(label, value) {
+    return `<div class="ficha-row"><span class="ficha-k">${esc(label)}</span><span class="ficha-v">${esc(value)}</span></div>`;
+  }
+
+  function renderFichaSection(section, data) {
+    // Objetivos: mostra só os marcados
+    if (section.type === "objetivos") {
+      const chosen = section.fields.filter((f) => isMarked(data[f.key]));
+      if (!chosen.length) return "";
+      const pills = chosen.map((f) => `<span class="pill primary">${esc(f.label)}</span>`).join("");
+      return `<div class="card"><h3>${esc(section.title)}</h3><div class="ficha-objs" style="margin-top:10px">${pills}</div></div>`;
+    }
+    // Seção com subseções (avaliação antropométrica)
+    if (section.subsections) {
+      let inner = "";
+      section.subsections.forEach((sub) => {
+        const rows = sub.fields
+          .filter((f) => (data[f.key] || "").toString().trim() !== "")
+          .map((f) => fichaRow(f.label.replace(" (dobra)", ""), data[f.key] + (f.unit ? " " + f.unit : "")));
+        if (rows.length) inner += `<div class="ficha-sub">${esc(sub.subtitle)}</div>${rows.join("")}`;
+      });
+      if (!inner) return "";
+      return `<div class="card"><h3>${esc(section.title)}</h3>${inner}</div>`;
+    }
+    // Seção simples
+    const rows = section.fields
+      .filter((f) => (data[f.key] || "").toString().trim() !== "")
+      .map((f) => fichaRow(f.label, data[f.key] + (f.unit ? " " + f.unit : "")));
+    if (!rows.length) return "";
+    return `<div class="card"><h3>${esc(section.title)}</h3><div style="margin-top:6px">${rows.join("")}</div></div>`;
+  }
+
+  VIEWS.aluno = async function () {
+    const ficha = await DB.get("settings", "ficha:" + state.user.email);
+    const data = (ficha && ficha.data) || null;
+
+    let body = "";
+    if (data) body = Excel.STUDENT_SCHEMA.map((s) => renderFichaSection(s, data)).join("");
+    if (!body) {
+      body = emptyState(
+        "📋",
+        "Ficha ainda não disponível",
+        "Seu personal ainda não enviou seus dados. Peça para ele importar a ficha na Área do Professor."
+      );
+    }
+
+    renderScreen(
+      `
+      <div class="top-header">
+        <button class="btn-link" id="back">← Perfil</button>
+        <span class="pill info">Ficha</span>
+      </div>
+      <h1>Dados do aluno</h1>
+      ${body}`,
+      { nav: false, help: "aluno" }
+    );
+    qs("#back").addEventListener("click", () => navigate("perfil"));
+  };
+
   // ---- Perfil ------------------------------------------------------------
   const DOOR_SVG =
     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>`;
@@ -705,6 +771,14 @@
             </span></span>
           </label>
         </div>
+      </div>
+
+      <div class="card tap prof-card" id="aluno-area">
+        <div>
+          <h3>Dados do aluno</h3>
+          <div class="muted small">Sua ficha: dados, objetivos, avaliação física</div>
+        </div>
+        <span class="chev">›</span>
       </div>
 
       <div class="card tap prof-card" id="prof-area">
@@ -761,6 +835,7 @@
       qs("#theme-label").textContent = dark ? "Tema escuro" : "Tema claro";
     });
 
+    qs("#aluno-area").addEventListener("click", () => navigate("aluno"));
     qs("#prof-area").addEventListener("click", () => navigate("professor"));
 
     // Alterar senha
@@ -855,19 +930,29 @@
         </div>`
       : `<div class="card muted">Nenhum plano importado ainda.</div>`;
 
+    const ficha = await DB.get("settings", "ficha:" + state.user.email);
+    const fichaSummary = ficha
+      ? `<div class="card">
+          <div class="row between"><h3>Ficha atual</h3><span class="pill primary">${ficha.count} campos</span></div>
+          <p class="muted small">Importada em ${new Date(ficha.importedAt).toLocaleDateString("pt-BR")}</p>
+          <button class="btn danger sm" id="remove-ficha" style="margin-top:10px">Remover ficha</button>
+        </div>`
+      : `<div class="card muted">Nenhuma ficha importada ainda.</div>`;
+
     renderScreen(
       `
       <div class="top-header">
         <button class="btn-link" id="back">← Perfil</button>
-        <span class="pill info">👨‍🏫 Professor</span>
+        <span class="pill info">Professor</span>
       </div>
       <h1>Área do Professor</h1>
 
+      <h3 style="margin:6px 2px 10px">Treino</h3>
       <div class="card">
         <h3>1. Modelo de planilha</h3>
         <p class="muted small">Baixe o modelo, preencha no Excel e importe. Colunas:
         <b>Semana · Dia · Exercício · Séries · Repetições · Descanso · Observação</b>.</p>
-        <button class="btn secondary" id="tpl">⬇ Baixar treino_modelo.xlsx</button>
+        <button class="btn secondary" id="tpl">Baixar treino_modelo.xlsx</button>
       </div>
 
       <div class="card">
@@ -879,7 +964,27 @@
         <input type="file" id="xlsx-file" accept=".xlsx,.xls,.csv" hidden />
       </div>
 
-      ${planSummary}`,
+      ${planSummary}
+
+      <hr class="sep" />
+      <h3 style="margin:6px 2px 10px">Ficha do aluno</h3>
+      <div class="card">
+        <h3>1. Modelo da ficha</h3>
+        <p class="muted small">Baixe o modelo, preencha a coluna <b>Valor</b> (tem uma aba com instruções)
+        e importe. Campos em branco não aparecem para o aluno.</p>
+        <button class="btn secondary" id="tpl-ficha">Baixar ficha_do_aluno_modelo.xlsx</button>
+      </div>
+
+      <div class="card">
+        <h3>2. Importar ficha</h3>
+        <div class="file-drop" id="drop-ficha">
+          <div style="font-size:2rem">📄</div>
+          <p>Toque para escolher o arquivo <b>.xlsx</b><br/><span class="small">ou arraste aqui</span></p>
+        </div>
+        <input type="file" id="ficha-file" accept=".xlsx,.xls,.csv" hidden />
+      </div>
+
+      ${fichaSummary}`,
       { nav: false, help: "professor" }
     );
 
@@ -915,6 +1020,62 @@
           VIEWS.professor();
         }, "Remover", true)
       );
+
+    // ---- Ficha do aluno ----
+    qs("#tpl-ficha").addEventListener("click", async () => {
+      try { await Excel.downloadFichaTemplate(); toast("Modelo da ficha baixado!", "success"); }
+      catch (e) { toast(e.message, "error"); }
+    });
+    const dropF = qs("#drop-ficha");
+    const fichaInput = qs("#ficha-file");
+    dropF.addEventListener("click", () => fichaInput.click());
+    ["dragover", "dragenter"].forEach((ev) =>
+      dropF.addEventListener(ev, (e) => { e.preventDefault(); dropF.classList.add("drag"); })
+    );
+    ["dragleave", "drop"].forEach((ev) =>
+      dropF.addEventListener(ev, (e) => { e.preventDefault(); dropF.classList.remove("drag"); })
+    );
+    dropF.addEventListener("drop", (e) => {
+      if (e.dataTransfer.files[0]) handleFichaImport(e.dataTransfer.files[0]);
+    });
+    fichaInput.addEventListener("change", (e) => {
+      if (e.target.files[0]) handleFichaImport(e.target.files[0]);
+    });
+    const removeFichaBtn = qs("#remove-ficha");
+    if (removeFichaBtn)
+      removeFichaBtn.addEventListener("click", () =>
+        confirmModal("Remover ficha?", "Isso apaga os dados da ficha do aluno neste aparelho.", async () => {
+          await DB.delete("settings", "ficha:" + state.user.email);
+          toast("Ficha removida.");
+          VIEWS.professor();
+        }, "Remover", true)
+      );
+
+    async function handleFichaImport(file) {
+      toast("Lendo ficha…");
+      try {
+        const parsed = await Excel.parseFichaFile(file);
+        const save = async () => {
+          await DB.put("settings", {
+            key: "ficha:" + state.user.email,
+            owner: state.user.email,
+            data: parsed.data,
+            count: parsed.count,
+            importedAt: new Date().toISOString()
+          });
+          toast(`Ficha importada: ${parsed.count} campos!`, "success");
+          VIEWS.professor();
+        };
+        if (ficha) {
+          confirmModal("Substituir ficha atual?", `A nova ficha tem ${parsed.count} campos. Deseja substituir a atual?`, save, "Substituir");
+        } else {
+          await save();
+        }
+      } catch (e) {
+        modal(`<h2>Erro ao importar</h2><p class="muted">${esc(e.message)}</p>
+          <button class="btn" onclick="document.getElementById('modal-root').innerHTML=''">Ok</button>`);
+      }
+    }
 
     async function handleImport(file) {
       toast("Lendo planilha…");
@@ -1116,6 +1277,14 @@
         ["👨‍🏫", "Abra a <b>Área do Professor</b> para importar o treino em Excel."],
         ["💾", "Faça <b>backup</b> dos seus dados (exportar/importar) ao trocar de aparelho."],
         ["🚪", "Use <b>Sair da conta</b> para trocar de usuário — seus dados continuam salvos."]
+      ]
+    },
+    aluno: {
+      title: "Dados do aluno",
+      items: [
+        ["📋", "Aqui aparece sua <b>ficha</b>: dados pessoais, objetivos, histórico, hábitos e avaliação física."],
+        ["👨‍🏫", "Esses dados são preenchidos e enviados pelo seu personal (via Excel)."],
+        ["👁️", "Só os campos preenchidos aparecem — o que estiver em branco fica oculto."]
       ]
     },
     professor: {
