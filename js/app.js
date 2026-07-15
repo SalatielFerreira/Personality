@@ -5,7 +5,7 @@
   "use strict";
 
   // Versão do app — manter igual em version.json e sw.js (CACHE_VERSION).
-  const APP_VERSION = "1.4.3";
+  const APP_VERSION = "1.5.0";
 
   // ---- Estado ------------------------------------------------------------
   const state = {
@@ -711,6 +711,27 @@
         <div class="muted small">Importar planilha de treino, gerenciar o plano</div>
       </div>
 
+      <div class="card">
+        <h3>Alterar senha</h3>
+        <div class="field" style="margin-top:12px">
+          <label>Senha atual</label>
+          <div class="pass-wrap">
+            <input class="form-input" id="cp-old" type="password" placeholder="Sua senha atual" />
+            <button class="pass-toggle" data-target="cp-old" type="button">${EYE_SVG}</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Nova senha</label>
+          <div class="pass-wrap">
+            <input class="form-input" id="cp-new" type="password" placeholder="Crie uma nova senha" />
+            <button class="pass-toggle" data-target="cp-new" type="button">${EYE_SVG}</button>
+          </div>
+          <div class="muted small" style="margin-top:6px">Mín. 8 caracteres, com maiúscula, minúscula, número e caractere especial.</div>
+        </div>
+        <div class="error-text" id="cp-error"></div>
+        <button class="btn" id="cp-save">Salvar nova senha</button>
+      </div>
+
       <button class="btn danger" id="logout">${DOOR_SVG} Sair da conta</button>
       <p class="center muted small" style="margin-top:14px">ELTECH Personality · v${APP_VERSION}</p>`,
       { active: "perfil" }
@@ -737,6 +758,25 @@
     });
 
     qs("#prof-area").addEventListener("click", () => navigate("professor"));
+
+    // Alterar senha
+    bindPasswordToggles();
+    qs("#cp-save").addEventListener("click", async () => {
+      const err = qs("#cp-error");
+      err.textContent = "";
+      const oldP = qs("#cp-old").value;
+      const newP = qs("#cp-new").value;
+      if (!oldP || !newP) { err.textContent = "Preencha os dois campos."; return; }
+      try {
+        await Auth.changePassword({ email: state.user.email, currentPassword: oldP, newPassword: newP });
+        qs("#cp-old").value = "";
+        qs("#cp-new").value = "";
+        toast("Senha alterada com sucesso!", "success");
+      } catch (e) {
+        err.textContent = e.message;
+      }
+    });
+
     qs("#logout").addEventListener("click", () =>
       confirmModal("Sair?", "Você precisará entrar novamente. Seus dados continuam salvos.", () => {
         Auth.logout();
@@ -1130,10 +1170,61 @@
   }
 
   // ======================================================================
+  //  Instalação do app (PWA) — banner "Baixar app"
+  // ======================================================================
+  let deferredInstall = null;
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredInstall = e; // guardado para o botão "Baixar app"
+  });
+  window.addEventListener("appinstalled", () => {
+    deferredInstall = null;
+    removeInstallBanner();
+  });
+
+  function isStandalone() {
+    return (
+      window.matchMedia("(display-mode: standalone)").matches ||
+      window.navigator.standalone === true
+    );
+  }
+
+  function showInstallBanner() {
+    if (isStandalone()) return; // já instalado: não mostra
+    if (document.getElementById("install-banner")) return;
+    const bar = document.createElement("div");
+    bar.id = "install-banner";
+    bar.className = "install-banner glass";
+    bar.innerHTML = `<span>📲 Instale o ELTECH Personality no seu aparelho</span>
+      <button class="btn xs" id="ib-btn">Baixar app</button>
+      <button class="ib-close" id="ib-close" aria-label="Fechar">×</button>`;
+    document.body.appendChild(bar);
+    requestAnimationFrame(() => bar.classList.add("show"));
+    document.getElementById("ib-close").addEventListener("click", removeInstallBanner);
+    document.getElementById("ib-btn").addEventListener("click", async () => {
+      if (deferredInstall) {
+        deferredInstall.prompt();
+        await deferredInstall.userChoice;
+        deferredInstall = null;
+        removeInstallBanner();
+      } else {
+        modal(`<h2>Instalar o app</h2>
+          <p class="muted"><b>iPhone/iPad (Safari):</b> toque em <b>Compartilhar</b> (quadrado com seta) e depois em <b>Adicionar à Tela de Início</b>.<br><br>
+          <b>Android / computador:</b> abra o menu do navegador (⋮) e escolha <b>Instalar app</b> ou <b>Adicionar à tela inicial</b>.</p>
+          <button class="btn" onclick="document.getElementById('modal-root').innerHTML=''">Entendi</button>`);
+      }
+    });
+  }
+  function removeInstallBanner() {
+    const b = document.getElementById("install-banner");
+    if (b) b.remove();
+  }
+
+  // ======================================================================
   //  Boot
   // ======================================================================
   async function boot() {
-    applyTheme(currentTheme());
+    applyTheme("light"); // sempre inicia no tema claro
     try {
       state.user = await Auth.currentUser();
     } catch (e) {
@@ -1143,6 +1234,8 @@
     window.addEventListener("online", () => { const b = qs(".online-badge"); if (b) route(); });
     window.addEventListener("offline", () => { const b = qs(".online-badge"); if (b) route(); });
     route();
+    // Mostra o convite para instalar sempre que abrir (se ainda não instalado).
+    setTimeout(() => { if (!isStandalone()) showInstallBanner(); }, 800);
   }
 
   document.addEventListener("DOMContentLoaded", boot);

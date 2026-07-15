@@ -5,6 +5,15 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.5.0] — 2026-07-15
+
+### Tema, instalação e senha
+- O app agora **inicia sempre no tema claro** (ao abrir o link ou o app instalado).
+- **Convite para instalar** o app aparece sempre que o link é aberto (se ainda não instalado):
+  botão "Baixar app" (instalação nativa no Android/PC; instruções no iPhone).
+- Novo campo **"Alterar senha"** no Perfil (abaixo da Área do Professor): senha atual,
+  nova senha e botão "Salvar nova senha" (valida a senha atual e as regras da nova).
+
 ## [1.4.3] — 2026-07-15
 
 ### Tema

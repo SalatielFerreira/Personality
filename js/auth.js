@@ -136,6 +136,20 @@
 
   // keep=true  -> sessão persiste entre aberturas (localStorage)
   // keep=false -> sessão só até fechar o app (sessionStorage)
+  async function changePassword({ email, currentPassword, newPassword }) {
+    email = (email || "").trim().toLowerCase();
+    const user = await DB.get("users", email);
+    if (!user) throw new Error("Conta não encontrada.");
+    const ok = await verifyPassword(currentPassword, user.salt, user.passwordHash);
+    if (!ok) throw new Error("Senha atual incorreta.");
+    if (!checkPassword(newPassword).valid) throw new Error("A nova senha não atende aos requisitos.");
+    const { hash, salt } = await hashPassword(newPassword);
+    user.passwordHash = hash;
+    user.salt = salt;
+    await DB.put("users", user);
+    return true;
+  }
+
   function setSession(email, keep = true) {
     logout();
     (keep ? localStorage : sessionStorage).setItem(SESSION_KEY, email);
@@ -165,6 +179,7 @@
     logout,
     currentUser,
     setSession,
+    changePassword,
     PASSWORD_RULES
   };
 })(window);
