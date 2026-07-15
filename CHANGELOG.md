@@ -5,6 +5,12 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.7.1] — 2026-07-15
+
+### Ajuste
+- Todos os avisos/alertas (toast, banner de instalar, atualização) usam a mesma fonte
+  e tamanho (Sora, 1rem).
+
 ## [1.7.0] — 2026-07-15
 
 ### Ficha do aluno (novo)

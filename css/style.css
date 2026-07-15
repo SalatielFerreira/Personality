@@ -334,7 +334,7 @@ textarea.input, textarea.form-input { min-height: 70px; resize: vertical; }
   color: var(--text); border: 1px solid var(--stroke-strong);
   padding: 13px 22px; border-radius: 14px; box-shadow: var(--shadow);
   opacity: 0; pointer-events: none; transition: opacity .3s ease, transform .3s ease;
-  z-index: 90; max-width: 90%; text-align: center; font-weight: 600;
+  z-index: 90; max-width: 90%; text-align: center; font-weight: 600; font-size: 1rem;
   display: flex; align-items: center; gap: 9px;
 }
 #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -360,7 +360,7 @@ textarea.input, textarea.form-input { min-height: 70px; resize: vertical; }
   transform: translateX(-50%) translateY(24px);
   display: flex; align-items: center; gap: 12px;
   padding: 10px 10px 10px 16px; border-radius: 14px; z-index: 92;
-  border: 1px solid var(--primary); color: var(--text); font-weight: 600; font-size: .9rem;
+  border: 1px solid var(--primary); color: var(--text); font-weight: 600; font-size: 1rem;
   max-width: 92%; opacity: 0; transition: opacity .3s ease, transform .3s ease;
 }
 .install-banner.show { opacity: 1; transform: translateX(-50%) translateY(0); }
