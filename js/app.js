@@ -5,7 +5,7 @@
   "use strict";
 
   // Versão do app — manter igual em version.json e sw.js (CACHE_VERSION).
-  const APP_VERSION = "1.6.2";
+  const APP_VERSION = "1.6.3";
 
   // ---- Estado ------------------------------------------------------------
   const state = {
@@ -715,14 +715,14 @@
         <div class="field" style="margin-top:12px">
           <label>Senha atual</label>
           <div class="pass-wrap">
-            <input class="form-input" id="cp-old" type="password" placeholder="Sua senha atual" />
+            <input class="form-input" id="cp-old" type="password" placeholder="Sua senha atual" autocomplete="new-password" autocapitalize="off" autocorrect="off" />
             <button class="pass-toggle" data-target="cp-old" type="button">${EYE_SVG}</button>
           </div>
         </div>
         <div class="field">
           <label>Nova senha</label>
           <div class="pass-wrap">
-            <input class="form-input" id="cp-new" type="password" placeholder="Crie uma nova senha" />
+            <input class="form-input" id="cp-new" type="password" placeholder="Crie uma nova senha" autocomplete="new-password" autocapitalize="off" autocorrect="off" />
             <button class="pass-toggle" data-target="cp-new" type="button">${EYE_SVG}</button>
           </div>
           <div class="muted small" style="margin-top:6px">Mín. 8 caracteres, com maiúscula, minúscula, número e caractere especial.</div>
@@ -760,6 +760,8 @@
 
     // Alterar senha
     bindPasswordToggles();
+    qs("#cp-old").value = "";
+    qs("#cp-new").value = "";
     qs("#cp-save").addEventListener("click", async () => {
       const err = qs("#cp-error");
       err.textContent = "";
