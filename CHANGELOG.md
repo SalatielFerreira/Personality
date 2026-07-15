@@ -5,6 +5,12 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.4.2] — 2026-07-15
+
+### Tipografia
+- Nome do usuário na Home e os títulos das páginas (Treinos, Evolução, Agenda, Perfil)
+  agora têm o **mesmo tamanho** (1.4rem; 1.55rem em telas grandes) — tamanho intermediário.
+
 ## [1.4.1] — 2026-07-15
 
 ### Ajustes do Perfil
