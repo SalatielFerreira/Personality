@@ -5,7 +5,7 @@
   "use strict";
 
   // Versão do app — manter igual em version.json e sw.js (CACHE_VERSION).
-  const APP_VERSION = "1.7.1";
+  const APP_VERSION = "1.8.0";
 
   // ---- Estado ------------------------------------------------------------
   const state = {
@@ -684,13 +684,21 @@
       const pills = chosen.map((f) => `<span class="pill primary">${esc(f.label)}</span>`).join("");
       return `<div class="card"><h3>${esc(section.title)}</h3><div class="ficha-objs" style="margin-top:10px">${pills}</div></div>`;
     }
-    // Seção com subseções (avaliação antropométrica)
+    // SIM/NÃO com descrição (histórico de saúde, hábitos de vida)
+    if (section.type === "simnao") {
+      const rows = section.fields
+        .filter((f) => isMarked(data[f.key]))
+        .map((f) => fichaRow(f.label, data[f.key + "_desc"] || "Sim"));
+      if (!rows.length) return "";
+      return `<div class="card"><h3>${esc(section.title)}</h3><div style="margin-top:6px">${rows.join("")}</div></div>`;
+    }
+    // Seção com subseções (avaliação antropométrica) — unidade cm/mm
     if (section.subsections) {
       let inner = "";
       section.subsections.forEach((sub) => {
         const rows = sub.fields
           .filter((f) => (data[f.key] || "").toString().trim() !== "")
-          .map((f) => fichaRow(f.label.replace(" (dobra)", ""), data[f.key] + (f.unit ? " " + f.unit : "")));
+          .map((f) => fichaRow(f.label.replace(" (dobra)", ""), data[f.key] + (sub.unit ? " " + sub.unit : "")));
         if (rows.length) inner += `<div class="ficha-sub">${esc(sub.subtitle)}</div>${rows.join("")}`;
       });
       if (!inner) return "";
@@ -923,18 +931,17 @@
     await loadPlan();
     const planSummary = state.plan
       ? `<div class="card">
-          <div class="row between"><h3>Plano atual</h3><span class="pill primary">${state.plan.totalExercises} exercícios</span></div>
-          <p class="muted small">Arquivo: ${esc(state.plan.fileName || "—")}</p>
+          <div class="row between"><h3>Treino atual</h3><span class="pill primary">${state.plan.totalExercises} exercícios</span></div>
           <p class="muted small">${state.plan.totalWeeks} semana(s) · importado em ${new Date(state.plan.importedAt).toLocaleDateString("pt-BR")}</p>
-          <button class="btn danger sm" id="remove-plan" style="margin-top:10px">Remover plano</button>
+          <button class="btn danger sm" id="remove-plan" style="margin-top:10px">Remover treino</button>
         </div>`
-      : `<div class="card muted">Nenhum plano importado ainda.</div>`;
+      : `<div class="card muted">Nenhum treino importado ainda.</div>`;
 
-    const ficha = await DB.get("settings", "ficha:" + state.user.email);
-    const fichaSummary = ficha
+    const fichaRec = await DB.get("settings", "ficha:" + state.user.email);
+    const fichaSummary = fichaRec
       ? `<div class="card">
-          <div class="row between"><h3>Ficha atual</h3><span class="pill primary">${ficha.count} campos</span></div>
-          <p class="muted small">Importada em ${new Date(ficha.importedAt).toLocaleDateString("pt-BR")}</p>
+          <div class="row between"><h3>Ficha atual</h3><span class="pill primary">${fichaRec.count} campos</span></div>
+          <p class="muted small">Importada em ${new Date(fichaRec.importedAt).toLocaleDateString("pt-BR")}</p>
           <button class="btn danger sm" id="remove-ficha" style="margin-top:10px">Remover ficha</button>
         </div>`
       : `<div class="card muted">Nenhuma ficha importada ainda.</div>`;
@@ -947,16 +954,15 @@
       </div>
       <h1>Área do Professor</h1>
 
-      <h3 style="margin:6px 2px 10px">Treino</h3>
       <div class="card">
-        <h3>1. Modelo de planilha</h3>
-        <p class="muted small">Baixe o modelo, preencha no Excel e importe. Colunas:
-        <b>Semana · Dia · Exercício · Séries · Repetições · Descanso · Observação</b>.</p>
-        <button class="btn secondary" id="tpl">Baixar treino_modelo.xlsx</button>
+        <h3>1. Baixar modelo</h3>
+        <p class="muted small">Uma planilha só, com as abas <b>Treino</b> e <b>Ficha do Aluno</b>
+        (e uma aba de <b>Instruções</b>). Preencha e importe aqui mesmo.</p>
+        <button class="btn secondary" id="tpl">Baixar modelo (.xlsx)</button>
       </div>
 
       <div class="card">
-        <h3>2. Importar treino</h3>
+        <h3>2. Importar dados</h3>
         <div class="file-drop" id="drop">
           <div style="font-size:2rem">📄</div>
           <p>Toque para escolher o arquivo <b>.xlsx</b><br/><span class="small">ou arraste aqui</span></p>
@@ -965,25 +971,6 @@
       </div>
 
       ${planSummary}
-
-      <hr class="sep" />
-      <h3 style="margin:6px 2px 10px">Ficha do aluno</h3>
-      <div class="card">
-        <h3>1. Modelo da ficha</h3>
-        <p class="muted small">Baixe o modelo, preencha a coluna <b>Valor</b> (tem uma aba com instruções)
-        e importe. Campos em branco não aparecem para o aluno.</p>
-        <button class="btn secondary" id="tpl-ficha">Baixar ficha_do_aluno_modelo.xlsx</button>
-      </div>
-
-      <div class="card">
-        <h3>2. Importar ficha</h3>
-        <div class="file-drop" id="drop-ficha">
-          <div style="font-size:2rem">📄</div>
-          <p>Toque para escolher o arquivo <b>.xlsx</b><br/><span class="small">ou arraste aqui</span></p>
-        </div>
-        <input type="file" id="ficha-file" accept=".xlsx,.xls,.csv" hidden />
-      </div>
-
       ${fichaSummary}`,
       { nav: false, help: "professor" }
     );
@@ -1013,34 +1000,14 @@
     const removeBtn = qs("#remove-plan");
     if (removeBtn)
       removeBtn.addEventListener("click", () =>
-        confirmModal("Remover plano?", "Isso apaga o treino importado (os registros de carga são mantidos).", async () => {
+        confirmModal("Remover treino?", "Isso apaga o treino importado (os registros de carga são mantidos).", async () => {
           await DB.delete("plans", state.user.email);
           state.plan = null;
-          toast("Plano removido.");
+          toast("Treino removido.");
           VIEWS.professor();
         }, "Remover", true)
       );
 
-    // ---- Ficha do aluno ----
-    qs("#tpl-ficha").addEventListener("click", async () => {
-      try { await Excel.downloadFichaTemplate(); toast("Modelo da ficha baixado!", "success"); }
-      catch (e) { toast(e.message, "error"); }
-    });
-    const dropF = qs("#drop-ficha");
-    const fichaInput = qs("#ficha-file");
-    dropF.addEventListener("click", () => fichaInput.click());
-    ["dragover", "dragenter"].forEach((ev) =>
-      dropF.addEventListener(ev, (e) => { e.preventDefault(); dropF.classList.add("drag"); })
-    );
-    ["dragleave", "drop"].forEach((ev) =>
-      dropF.addEventListener(ev, (e) => { e.preventDefault(); dropF.classList.remove("drag"); })
-    );
-    dropF.addEventListener("drop", (e) => {
-      if (e.dataTransfer.files[0]) handleFichaImport(e.dataTransfer.files[0]);
-    });
-    fichaInput.addEventListener("change", (e) => {
-      if (e.target.files[0]) handleFichaImport(e.target.files[0]);
-    });
     const removeFichaBtn = qs("#remove-ficha");
     if (removeFichaBtn)
       removeFichaBtn.addEventListener("click", () =>
@@ -1051,49 +1018,41 @@
         }, "Remover", true)
       );
 
-    async function handleFichaImport(file) {
-      toast("Lendo ficha…");
-      try {
-        const parsed = await Excel.parseFichaFile(file);
-        const save = async () => {
-          await DB.put("settings", {
-            key: "ficha:" + state.user.email,
-            owner: state.user.email,
-            data: parsed.data,
-            count: parsed.count,
-            importedAt: new Date().toISOString()
-          });
-          toast(`Ficha importada: ${parsed.count} campos!`, "success");
-          VIEWS.professor();
-        };
-        if (ficha) {
-          confirmModal("Substituir ficha atual?", `A nova ficha tem ${parsed.count} campos. Deseja substituir a atual?`, save, "Substituir");
-        } else {
-          await save();
-        }
-      } catch (e) {
-        modal(`<h2>Erro ao importar</h2><p class="muted">${esc(e.message)}</p>
-          <button class="btn" onclick="document.getElementById('modal-root').innerHTML=''">Ok</button>`);
-      }
-    }
-
     async function handleImport(file) {
       toast("Lendo planilha…");
       try {
-        const parsed = await Excel.parseFile(file);
+        const { plan, ficha } = await Excel.parseWorkbook(file);
+        if (!plan && !ficha)
+          throw new Error("Nenhum dado reconhecido. Use o modelo (abas 'Treino' e 'Ficha do Aluno').");
+
         const doSave = async () => {
-          const plan = { id: state.user.email, owner: state.user.email, ...parsed, importedAt: new Date().toISOString() };
-          await DB.put("plans", plan);
-          state.plan = plan;
-          toast(`Treino importado: ${parsed.totalExercises} exercícios em ${parsed.totalWeeks} semana(s)!`, "success");
+          const parts = [];
+          if (plan) {
+            const rec = { id: state.user.email, owner: state.user.email, ...plan, importedAt: new Date().toISOString() };
+            await DB.put("plans", rec);
+            state.plan = rec;
+            parts.push(`treino: ${plan.totalExercises} exercícios`);
+          }
+          if (ficha) {
+            await DB.put("settings", {
+              key: "ficha:" + state.user.email,
+              owner: state.user.email,
+              data: ficha.data,
+              count: ficha.count,
+              importedAt: new Date().toISOString()
+            });
+            parts.push(`ficha: ${ficha.count} campos`);
+          }
+          toast("Importado — " + parts.join(" · "), "success");
           VIEWS.professor();
         };
-        if (state.plan) {
-          confirmModal(
-            "Substituir treino atual?",
-            `A planilha tem ${parsed.totalExercises} exercícios (${parsed.totalWeeks} semanas). Deseja substituir o plano atual?`,
-            doSave, "Substituir"
-          );
+
+        if ((plan && state.plan) || (ficha && fichaRec)) {
+          const msg = [
+            plan ? `${plan.totalExercises} exercícios` : null,
+            ficha ? `${ficha.count} campos de ficha` : null
+          ].filter(Boolean).join(" e ");
+          confirmModal("Substituir dados atuais?", `O arquivo traz ${msg}. Deseja substituir o que já existe?`, doSave, "Substituir");
         } else {
           await doSave();
         }
@@ -1290,10 +1249,10 @@
     professor: {
       title: "Área do Professor",
       items: [
-        ["⬇️", "Baixe o <b>modelo de Excel</b> já no formato certo."],
-        ["📝", "Preencha uma linha por série: Semana, Dia, Exercício, Séries, Repetições, Descanso, Observação."],
-        ["📄", "Toque na área de importar e escolha o arquivo <b>.xlsx</b> — o treino é montado automaticamente."],
-        ["🔁", "Ao importar de novo, o app pergunta antes de substituir o treino atual."]
+        ["⬇️", "Baixe o <b>modelo</b> — um só arquivo com as abas <b>Treino</b>, <b>Ficha do Aluno</b> e <b>Instruções</b>."],
+        ["📝", "Na aba Treino: uma linha por série. Na aba Ficha: preencha o que quiser exibir (o resto fica oculto)."],
+        ["📄", "Toque em <b>Importar dados</b> e escolha o <b>.xlsx</b> — treino e ficha são lidos do mesmo arquivo."],
+        ["🔁", "Ao importar de novo, o app pergunta antes de substituir os dados atuais."]
       ]
     }
   };

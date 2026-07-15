@@ -5,6 +5,15 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.8.0] — 2026-07-15
+
+### Excel único (treino + ficha)
+- Agora é **um só arquivo Excel** com as abas **Treino**, **Ficha do Aluno** e **Instruções**.
+  A Área do Professor tem um único "Baixar modelo" e um único "Importar dados".
+- **Histórico de saúde** e **Hábitos de vida**: coluna **Valor = SIM/NÃO** e coluna
+  **Descrição** (no lugar de Unidade). No app aparecem só os itens marcados como SIM, com a descrição.
+- **Circunferências** com unidade **cm** e **Dobras cutâneas** com unidade **mm** em cada linha.
+
 ## [1.7.1] — 2026-07-15
 
 ### Ajuste

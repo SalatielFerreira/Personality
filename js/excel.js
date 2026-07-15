@@ -1,7 +1,8 @@
 /* ELTECH Personality - Importação/Exportação de Excel (SheetJS)
- * Formato esperado da planilha (uma linha por série de exercício):
- *   Semana | Dia | Exercício | Séries | Repetições | Descanso | Observação
- * "Dia" é o tipo de treino (A, B, C, ...). O app agrupa por Semana e Dia.
+ * UM ÚNICO arquivo alimenta o app, com as abas:
+ *   - "Treino": Semana | Dia | Exercício | Séries | Repetições | Descanso | Observação
+ *   - "Ficha do Aluno": dados pessoais, objetivos, saúde, hábitos, avaliação, composição
+ *   - "Instruções": como preencher
  */
 (function (global) {
   "use strict";
@@ -24,17 +25,6 @@
     return xlsxLoading;
   }
 
-  // Aceita variações de acento/caixa nos cabeçalhos.
-  const HEADER_MAP = {
-    semana: "week", week: "week",
-    dia: "day", treino: "day", day: "day",
-    exercicio: "exercise", exercício: "exercise", exercise: "exercise",
-    serie: "sets", série: "sets", series: "sets", séries: "sets", sets: "sets",
-    repeticoes: "reps", repetições: "reps", repeticao: "reps", rep: "reps", reps: "reps",
-    descanso: "rest", rest: "rest",
-    observacao: "obs", observação: "obs", obs: "obs", observacoes: "obs", observações: "obs"
-  };
-
   function normalizeKey(k) {
     return String(k || "")
       .trim()
@@ -43,35 +33,40 @@
       .replace(/[̀-ͯ]/g, "");
   }
 
+  // ===================================================================
+  //  TREINO
+  // ===================================================================
+  const HEADER_MAP = {
+    semana: "week", week: "week",
+    dia: "day", treino: "day", day: "day",
+    exercicio: "exercise", exercise: "exercise",
+    serie: "sets", series: "sets", sets: "sets",
+    repeticoes: "reps", repeticao: "reps", rep: "reps", reps: "reps",
+    descanso: "rest", rest: "rest",
+    observacao: "obs", obs: "obs", observacoes: "obs"
+  };
+
   function mapRow(row) {
     const out = {};
     Object.keys(row).forEach((k) => {
-      const norm = normalizeKey(k);
-      const field = HEADER_MAP[norm];
+      const field = HEADER_MAP[normalizeKey(k)];
       if (field) out[field] = row[k];
     });
     return out;
   }
 
-  // Lê um File e devolve uma estrutura de plano pronta para salvar.
-  async function parseFile(file) {
-    const XLSX = await loadXLSX();
-    const data = await file.arrayBuffer();
-    const wb = XLSX.read(data, { type: "array" });
-    const sheet = wb.Sheets[wb.SheetNames[0]];
+  function parsePlanSheet(XLSX, sheet, fileName) {
+    if (!sheet) return null;
     const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
-
-    if (!rows.length) throw new Error("A planilha está vazia.");
+    if (!rows.length) return null;
 
     const weeksMap = {};
     let count = 0;
-
     rows.forEach((raw) => {
       const r = mapRow(raw);
-      if (!r.exercise || String(r.exercise).trim() === "") return; // ignora linhas vazias
+      if (!r.exercise || String(r.exercise).trim() === "") return;
       const week = parseInt(r.week, 10) || 1;
       const day = String(r.day || "A").trim().toUpperCase();
-
       weeksMap[week] = weeksMap[week] || {};
       weeksMap[week][day] = weeksMap[week][day] || [];
       weeksMap[week][day].push({
@@ -83,53 +78,29 @@
       });
       count++;
     });
+    if (count === 0) return null;
 
-    if (count === 0) throw new Error("Nenhum exercício válido encontrado. Confira os cabeçalhos da planilha.");
-
-    // Ordena semanas e dias.
     const weeks = Object.keys(weeksMap)
       .map(Number)
       .sort((a, b) => a - b)
-      .map((weekNum) => {
-        const days = Object.keys(weeksMap[weekNum])
+      .map((weekNum) => ({
+        week: weekNum,
+        days: Object.keys(weeksMap[weekNum])
           .sort()
-          .map((dayKey) => ({ day: dayKey, exercises: weeksMap[weekNum][dayKey] }));
-        return { week: weekNum, days };
-      });
+          .map((dayKey) => ({ day: dayKey, exercises: weeksMap[weekNum][dayKey] }))
+      }));
 
-    return {
-      fileName: file.name,
-      totalExercises: count,
-      totalWeeks: weeks.length,
-      weeks
-    };
+    return { fileName: fileName || "", totalExercises: count, totalWeeks: weeks.length, weeks };
   }
 
-  // Gera e baixa um modelo .xlsx já preenchido com exemplos.
-  async function downloadTemplate() {
-    const XLSX = await loadXLSX();
-    const rows = [
-      { Semana: 1, Dia: "A", Exercício: "Supino Reto", Séries: 4, Repetições: "10", Descanso: 60, Observação: "Controle na descida" },
-      { Semana: 1, Dia: "A", Exercício: "Crucifixo", Séries: 3, Repetições: "12", Descanso: 45, Observação: "Movimento lento" },
-      { Semana: 1, Dia: "A", Exercício: "Tríceps Barra", Séries: 3, Repetições: "15", Descanso: 45, Observação: "" },
-      { Semana: 1, Dia: "B", Exercício: "Agachamento", Séries: 4, Repetições: "10", Descanso: 90, Observação: "Amplitude total" },
-      { Semana: 1, Dia: "B", Exercício: "Leg Press", Séries: 4, Repetições: "12", Descanso: 90, Observação: "" },
-      { Semana: 2, Dia: "A", Exercício: "Supino Reto", Séries: 4, Repetições: "8", Descanso: 75, Observação: "Aumentar carga" }
-    ];
-    const ws = XLSX.utils.json_to_sheet(rows, {
-      header: ["Semana", "Dia", "Exercício", "Séries", "Repetições", "Descanso", "Observação"]
-    });
-    ws["!cols"] = [
-      { wch: 8 }, { wch: 6 }, { wch: 24 }, { wch: 8 }, { wch: 12 }, { wch: 10 }, { wch: 28 }
-    ];
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Treino");
-    XLSX.writeFile(wb, "treino_modelo.xlsx");
-  }
-
-  // =====================================================================
-  //  FICHA DO ALUNO (dados vindos de um Excel preenchido pelo personal)
-  // =====================================================================
+  // ===================================================================
+  //  FICHA DO ALUNO
+  //  Tipos de seção:
+  //   - undefined  -> Campo | Valor | Unidade
+  //   - "objetivos"-> Objetivo | Marcar (X)
+  //   - "simnao"   -> Campo | Valor (SIM/NÃO) | Descrição
+  //   - subsections com unit (cm/mm)
+  // ===================================================================
   const STUDENT_SCHEMA = [
     {
       title: "Dados pessoais",
@@ -161,6 +132,7 @@
     },
     {
       title: "Histórico de saúde",
+      type: "simnao",
       fields: [
         { key: "doencas", label: "Doenças diagnosticadas" },
         { key: "cirurgias", label: "Cirurgias anteriores" },
@@ -172,6 +144,7 @@
     },
     {
       title: "Hábitos de vida",
+      type: "simnao",
       fields: [
         { key: "freq_ativ", label: "Frequência de atividade física" },
         { key: "modalidade", label: "Modalidade praticada" },
@@ -189,7 +162,8 @@
       title: "Avaliação antropométrica",
       subsections: [
         {
-          subtitle: "Circunferências (cm)",
+          subtitle: "Circunferências",
+          unit: "cm",
           fields: [
             { key: "circ_pescoco", label: "Pescoço" },
             { key: "circ_ombros", label: "Ombros" },
@@ -205,7 +179,8 @@
           ]
         },
         {
-          subtitle: "Dobras cutâneas (mm)",
+          subtitle: "Dobras cutâneas",
+          unit: "mm",
           fields: [
             { key: "db_tricipital", label: "Tricipital" },
             { key: "db_bicipital", label: "Bicipital" },
@@ -233,51 +208,86 @@
     }
   ];
 
+  // Lista achatada com metadado se o campo tem coluna "Descrição".
   function fichaFields() {
     const out = [];
     STUDENT_SCHEMA.forEach((s) => {
-      if (s.subsections) s.subsections.forEach((sub) => sub.fields.forEach((f) => out.push(f)));
-      else s.fields.forEach((f) => out.push(f));
+      const desc = s.type === "simnao";
+      if (s.subsections) s.subsections.forEach((sub) => sub.fields.forEach((f) => out.push({ key: f.key, label: f.label, desc: false })));
+      else s.fields.forEach((f) => out.push({ key: f.key, label: f.label, desc }));
     });
     return out;
   }
 
-  async function parseFichaFile(file) {
-    const XLSX = await loadXLSX();
-    const buf = await file.arrayBuffer();
-    const wb = XLSX.read(buf, { type: "array", cellDates: true });
-    const sheet = wb.Sheets[wb.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+  function cellToStr(v) {
+    if (v instanceof Date) return v.toLocaleDateString("pt-BR");
+    return String(v == null ? "" : v).trim();
+  }
 
+  function parseFichaSheet(XLSX, sheet) {
+    if (!sheet) return null;
+    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
     const lookup = {};
-    fichaFields().forEach((f) => (lookup[normalizeKey(f.label)] = f.key));
+    fichaFields().forEach((f) => (lookup[normalizeKey(f.label)] = f));
 
     const out = {};
     let count = 0;
     rows.forEach((r) => {
       if (!r || r.length < 2) return;
-      const key = lookup[normalizeKey(r[0])];
-      if (!key) return;
-      const raw = r[1];
-      let val;
-      if (raw instanceof Date) val = raw.toLocaleDateString("pt-BR");
-      else val = String(raw == null ? "" : raw).trim();
+      const entry = lookup[normalizeKey(r[0])];
+      if (!entry) return;
+      const val = cellToStr(r[1]);
       if (val === "") return;
-      out[key] = val;
+      out[entry.key] = val;
+      if (entry.desc) {
+        const dval = cellToStr(r[2]);
+        if (dval !== "") out[entry.key + "_desc"] = dval;
+      }
       count++;
     });
-
-    if (count === 0)
-      throw new Error("Nenhum dado reconhecido. Use o modelo e preencha a coluna Valor.");
-    return { data: out, count };
+    return count ? { data: out, count } : null;
   }
 
-  async function downloadFichaTemplate() {
+  // Lê o arquivo inteiro e devolve { plan, ficha } (cada um pode ser null).
+  async function parseWorkbook(file) {
     const XLSX = await loadXLSX();
+    const buf = await file.arrayBuffer();
+    const wb = XLSX.read(buf, { type: "array", cellDates: true });
+    const names = wb.SheetNames;
+    const treinoName = names.find((n) => normalizeKey(n).includes("treino")) || names[0];
+    const fichaName = names.find((n) => normalizeKey(n).includes("ficha"));
+    return {
+      plan: treinoName ? parsePlanSheet(XLSX, wb.Sheets[treinoName], file.name) : null,
+      ficha: fichaName ? parseFichaSheet(XLSX, wb.Sheets[fichaName]) : null
+    };
+  }
+
+  // ===================================================================
+  //  MODELO (um único arquivo com todas as abas)
+  // ===================================================================
+  async function downloadTemplate() {
+    const XLSX = await loadXLSX();
+    const wb = XLSX.utils.book_new();
+
+    // --- Aba Treino ---
+    const treinoRows = [
+      { Semana: 1, Dia: "A", Exercício: "Supino Reto", Séries: 4, Repetições: "10", Descanso: 60, Observação: "Controle na descida" },
+      { Semana: 1, Dia: "A", Exercício: "Crucifixo", Séries: 3, Repetições: "12", Descanso: 45, Observação: "Movimento lento" },
+      { Semana: 1, Dia: "A", Exercício: "Tríceps Barra", Séries: 3, Repetições: "15", Descanso: 45, Observação: "" },
+      { Semana: 1, Dia: "B", Exercício: "Agachamento", Séries: 4, Repetições: "10", Descanso: 90, Observação: "Amplitude total" },
+      { Semana: 1, Dia: "B", Exercício: "Leg Press", Séries: 4, Repetições: "12", Descanso: 90, Observação: "" },
+      { Semana: 2, Dia: "A", Exercício: "Supino Reto", Séries: 4, Repetições: "8", Descanso: 75, Observação: "Aumentar carga" }
+    ];
+    const wsTreino = XLSX.utils.json_to_sheet(treinoRows, {
+      header: ["Semana", "Dia", "Exercício", "Séries", "Repetições", "Descanso", "Observação"]
+    });
+    wsTreino["!cols"] = [{ wch: 8 }, { wch: 6 }, { wch: 24 }, { wch: 8 }, { wch: 12 }, { wch: 10 }, { wch: 28 }];
+    XLSX.utils.book_append_sheet(wb, wsTreino, "Treino");
+
+    // --- Aba Ficha do Aluno ---
     const aoa = [
       ["FICHA DO ALUNO — ELTECH Personality"],
-      ["Preencha apenas a coluna VALOR. Campos em branco não aparecem no app."],
-      ["Em OBJETIVOS, escreva X (ou Sim) nos desejados. Não altere os nomes dos campos."],
+      ["Preencha as colunas em branco. Campos vazios não aparecem no app."],
       []
     ];
     STUDENT_SCHEMA.forEach((s) => {
@@ -285,11 +295,14 @@
       if (s.type === "objetivos") {
         aoa.push(["Objetivo", "Marcar (X)"]);
         s.fields.forEach((f) => aoa.push([f.label, ""]));
+      } else if (s.type === "simnao") {
+        aoa.push(["Campo", "Valor (SIM/NÃO)", "Descrição"]);
+        s.fields.forEach((f) => aoa.push([f.label, "", ""]));
       } else if (s.subsections) {
         s.subsections.forEach((sub) => {
           aoa.push([sub.subtitle]);
-          aoa.push(["Campo", "Valor"]);
-          sub.fields.forEach((f) => aoa.push([f.label, ""]));
+          aoa.push(["Campo", "Valor", "Unidade"]);
+          sub.fields.forEach((f) => aoa.push([f.label, "", sub.unit || ""]));
         });
       } else {
         aoa.push(["Campo", "Valor", "Unidade"]);
@@ -297,35 +310,42 @@
       }
       aoa.push([]);
     });
-    const ws = XLSX.utils.aoa_to_sheet(aoa);
-    ws["!cols"] = [{ wch: 34 }, { wch: 26 }, { wch: 12 }];
+    const wsFicha = XLSX.utils.aoa_to_sheet(aoa);
+    wsFicha["!cols"] = [{ wch: 34 }, { wch: 18 }, { wch: 30 }];
+    XLSX.utils.book_append_sheet(wb, wsFicha, "Ficha do Aluno");
 
+    // --- Aba Instruções ---
     const guide = [
-      ["COMO PREENCHER A FICHA DO ALUNO"],
+      ["COMO PREENCHER — ELTECH Personality"],
       [""],
-      ["1. Preencha somente a coluna VALOR (ao lado de cada campo), na aba 'Ficha do Aluno'."],
-      ["2. NÃO altere os nomes dos campos (coluna da esquerda) — o app usa eles para ler."],
-      ["3. Campos deixados em branco não aparecem no app do aluno."],
-      ["4. Em OBJETIVOS, escreva X ou Sim nos objetivos que o aluno deseja."],
-      ["5. Circunferências em centímetros (cm); dobras cutâneas em milímetros (mm)."],
-      ["6. Datas no formato dd/mm/aaaa."],
-      ["7. Salve o arquivo e importe em: Perfil > Área do Professor > Ficha do aluno."]
+      ["Este único arquivo alimenta o app do aluno. Preencha as duas abas:"],
+      [""],
+      ["ABA 'TREINO'"],
+      ["• Uma linha por série de exercício."],
+      ["• Colunas: Semana | Dia (A, B, C...) | Exercício | Séries | Repetições | Descanso | Observação."],
+      ["• Pode repetir o mesmo exercício em semanas diferentes para progredir a carga."],
+      [""],
+      ["ABA 'FICHA DO ALUNO'"],
+      ["• Não altere os nomes dos campos (coluna da esquerda)."],
+      ["• Campos deixados em branco NÃO aparecem no app."],
+      ["• OBJETIVOS: escreva X (ou Sim) nos objetivos desejados."],
+      ["• HISTÓRICO DE SAÚDE e HÁBITOS DE VIDA: escreva SIM ou NÃO na coluna Valor e detalhe na Descrição."],
+      ["• CIRCUNFERÊNCIAS em centímetros (cm); DOBRAS CUTÂNEAS em milímetros (mm)."],
+      ["• Datas no formato dd/mm/aaaa."],
+      [""],
+      ["Depois é só salvar o arquivo e importar em: Perfil > Área do Professor > Importar dados."]
     ];
-    const gws = XLSX.utils.aoa_to_sheet(guide);
-    gws["!cols"] = [{ wch: 80 }];
+    const wsGuide = XLSX.utils.aoa_to_sheet(guide);
+    wsGuide["!cols"] = [{ wch: 95 }];
+    XLSX.utils.book_append_sheet(wb, wsGuide, "Instruções");
 
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Ficha do Aluno");
-    XLSX.utils.book_append_sheet(wb, gws, "Instruções");
-    XLSX.writeFile(wb, "ficha_do_aluno_modelo.xlsx");
+    XLSX.writeFile(wb, "eltech_personality_modelo.xlsx");
   }
 
   global.Excel = {
-    parseFile,
-    downloadTemplate,
     loadXLSX,
-    STUDENT_SCHEMA,
-    parseFichaFile,
-    downloadFichaTemplate
+    parseWorkbook,
+    downloadTemplate,
+    STUDENT_SCHEMA
   };
 })(window);
