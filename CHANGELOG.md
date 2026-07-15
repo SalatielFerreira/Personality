@@ -5,6 +5,11 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.6.2] — 2026-07-15
+
+### Ajuste
+- Tamanho da saudação ("Boa tarde,") agora fica entre o da data e o do nome.
+
 ## [1.6.1] — 2026-07-15
 
 ### Ajuste

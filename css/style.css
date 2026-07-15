@@ -364,7 +364,7 @@ textarea.input, textarea.form-input { min-height: 70px; resize: vertical; }
 .error-text { color: var(--danger); font-size: .85rem; margin-top: 6px; min-height: 1em; }
 .top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; gap: 10px; }
 /* Home: saudação em branco/preto (contraste do tema) e nome 1/3 menor */
-.home-greet { color: var(--text); font-weight: 600; }
+.home-greet { color: var(--text); font-weight: 600; font-size: 1.1rem; }
 .home-name { font-size: 1.4rem; font-weight: 800; margin: 2px 0 0; }
 .file-drop { border: 2px dashed var(--stroke-strong); border-radius: var(--radius); padding: 28px; text-align: center; color: var(--text2); cursor: pointer; transition: border-color .2s, background .2s; }
 .file-drop:hover, .file-drop.drag { border-color: var(--primary); background: rgba(0, 210, 106, .06); }
