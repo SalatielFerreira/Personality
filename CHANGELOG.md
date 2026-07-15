@@ -5,6 +5,12 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.3.1] — 2026-07-15
+
+### Data/hora
+- A data e hora na Home agora seguem o **fuso do próprio aparelho do usuário**
+  (antes era fixo no horário de Brasília).
+
 ## [1.3.0] — 2026-07-15
 
 ### Cabeçalho e Home
