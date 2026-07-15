@@ -5,7 +5,7 @@
   "use strict";
 
   // Versão do app — manter igual em version.json e sw.js (CACHE_VERSION).
-  const APP_VERSION = "1.4.0";
+  const APP_VERSION = "1.4.1";
 
   // ---- Estado ------------------------------------------------------------
   const state = {
@@ -669,6 +669,12 @@
   // ---- Perfil ------------------------------------------------------------
   const DOOR_SVG =
     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>`;
+  const USER_ICON =
+    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg>`;
+  const SUN_SVG =
+    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>`;
+  const MOON_SVG =
+    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>`;
 
   VIEWS.perfil = async function () {
     const u = state.user;
@@ -679,7 +685,7 @@
       <h1>Perfil</h1>
       <div class="card center">
         <div class="avatar-field" id="avatar-field" title="Toque para adicionar sua foto">
-          ${photo ? `<img src="${photo}" alt="foto" />` : `<span class="avatar-ph">+<br><small>FOTO</small></span>`}
+          ${photo ? `<img src="${photo}" alt="foto" />` : `<span class="avatar-ph">${USER_ICON}</span>`}
         </div>
         <input type="file" id="avatar-input" accept="image/*" capture="user" hidden />
         <input class="name-edit" id="name-edit" value="${esc(u.name)}" maxlength="40" aria-label="Seu nome" />
@@ -687,10 +693,15 @@
 
       <div class="card">
         <div class="row between">
-          <h3>Aparência do app</h3>
+          <div>
+            <h3>Aparência do app</h3>
+            <div class="muted small" id="theme-label">${theme === "dark" ? "Tema escuro" : "Tema claro"}</div>
+          </div>
           <label class="switch">
             <input type="checkbox" id="theme-toggle" ${theme === "dark" ? "checked" : ""}/>
-            <span class="switch-track"><span class="switch-knob"></span></span>
+            <span class="switch-track"><span class="switch-knob">
+              <span class="ic-sun">${SUN_SVG}</span><span class="ic-moon">${MOON_SVG}</span>
+            </span></span>
           </label>
         </div>
       </div>
@@ -718,10 +729,12 @@
     nameEl.addEventListener("change", () => saveUserName(nameEl.value));
     nameEl.addEventListener("keydown", (e) => { if (e.key === "Enter") nameEl.blur(); });
 
-    // Tema (botão disjuntor)
-    qs("#theme-toggle").addEventListener("change", (e) =>
-      applyTheme(e.target.checked ? "dark" : "light")
-    );
+    // Tema (botão disjuntor com sol/lua)
+    qs("#theme-toggle").addEventListener("change", (e) => {
+      const dark = e.target.checked;
+      applyTheme(dark ? "dark" : "light");
+      qs("#theme-label").textContent = dark ? "Tema escuro" : "Tema claro";
+    });
 
     qs("#prof-area").addEventListener("click", () => navigate("professor"));
     qs("#logout").addEventListener("click", () =>

@@ -5,6 +5,15 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.4.1] — 2026-07-15
+
+### Ajustes do Perfil
+- Removido o lápis do círculo da foto; quando **sem foto**, mostra um **ícone de usuário**
+  na cor do tema (branco no escuro, preto no claro).
+- "Aparência do app" agora tem o subtítulo **Tema escuro / Tema claro**.
+- O interruptor de tema mostra **sol** (claro) e **lua** (escuro).
+- Confirmado: alterar o nome atualiza também a saudação da Home.
+
 ## [1.4.0] — 2026-07-15
 
 ### Perfil reformulado
