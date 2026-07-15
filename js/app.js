@@ -5,7 +5,7 @@
   "use strict";
 
   // Versão do app — manter igual em version.json e sw.js (CACHE_VERSION).
-  const APP_VERSION = "1.1.0";
+  const APP_VERSION = "1.2.0";
 
   // ---- Estado ------------------------------------------------------------
   const state = {
@@ -111,11 +111,22 @@
     window.scrollTo(0, 0);
   }
 
-  // Renderiza uma tela e a barra de navegação inferior quando aplicável.
-  function renderScreen(innerHtml, { nav = true, active = "" } = {}) {
+  // Renderiza uma tela com barra superior (nome + ajuda) e, quando aplicável,
+  // a barra de navegação inferior.
+  function renderScreen(innerHtml, { nav = true, active = "", help = "" } = {}) {
     app().innerHTML =
-      `<div class="screen ${nav ? "" : "no-nav"}">${innerHtml}</div>` +
+      topBar() +
+      `<div class="screen has-topbar ${nav ? "" : "no-nav"}">${innerHtml}</div>` +
       (nav ? navBar(active) : "");
+    const hb = qs("#help-btn");
+    if (hb) hb.addEventListener("click", () => openHelp(help || active || "home"));
+  }
+
+  function topBar() {
+    return `<header class="top-bar glass">
+      <div class="tb-brand"><span class="grad-text">ELTECH</span><span class="tb-sub">Personality</span></div>
+      <button class="help-btn" id="help-btn" aria-label="Ajuda" title="Ajuda">?</button>
+    </header>`;
   }
 
   function navBar(active) {
@@ -469,7 +480,7 @@
       ${exCards}
 
       <button class="btn" id="finish" style="margin-top:8px">✔ Finalizar treino</button>`,
-      { nav: false }
+      { nav: false, help: "workout" }
     );
 
     qs("#back").addEventListener("click", () => navigate("treinos"));
@@ -740,7 +751,7 @@
       </div>
 
       ${planSummary}`,
-      { nav: false }
+      { nav: false, help: "professor" }
     );
 
     qs("#back").addEventListener("click", () => navigate("perfil"));
@@ -914,6 +925,75 @@
   // ======================================================================
   function emptyState(icon, title, text) {
     return `<div class="empty"><div class="big">${icon}</div><h3>${esc(title)}</h3><p>${esc(text)}</p></div>`;
+  }
+
+  // ---- Ajuda por página (botão ? da barra superior) ---------------------
+  const HELP = {
+    home: {
+      title: "Início",
+      items: [
+        ["🏠", "Esta é sua tela inicial: veja o próximo treino e o progresso da semana."],
+        ["▶️", "Toque em <b>Iniciar treino</b> para começar o treino do dia."],
+        ["📊", "Os cards mostram treinos concluídos, séries, volume e semanas do plano."]
+      ]
+    },
+    treinos: {
+      title: "Treinos",
+      items: [
+        ["📅", "Escolha a <b>semana</b> nos botões do topo."],
+        ["🅰️", "Cada card é um tipo de treino (A, B, C...). Toque para executá-lo."],
+        ["✅", "A porcentagem mostra quanto daquele treino você já concluiu."]
+      ]
+    },
+    workout: {
+      title: "Executando o treino",
+      items: [
+        ["🏋️", "Para cada exercício, ajuste o <b>peso</b> e as <b>repetições</b> com os botões − e +."],
+        ["✔️", "Toque no <b>✔</b> ao terminar cada série — o cronômetro de descanso inicia sozinho."],
+        ["⏱️", "Use os botões do cronômetro (45s, 60s...) para controlar o descanso manualmente."],
+        ["💾", "Seus pesos ficam salvos: na próxima vez já aparecem preenchidos."]
+      ]
+    },
+    evolucao: {
+      title: "Evolução",
+      items: [["📈", "Em breve: gráficos de carga, peso corporal, volume e frequência."]]
+    },
+    agenda: {
+      title: "Agenda",
+      items: [["📆", "Em breve: calendário com os dias treinados, faltas e cardio."]]
+    },
+    perfil: {
+      title: "Perfil",
+      items: [
+        ["🎨", "Ative ou desative o <b>tema escuro</b>."],
+        ["👨‍🏫", "Abra a <b>Área do Professor</b> para importar o treino em Excel."],
+        ["💾", "Faça <b>backup</b> dos seus dados (exportar/importar) ao trocar de aparelho."],
+        ["🚪", "Use <b>Sair da conta</b> para trocar de usuário — seus dados continuam salvos."]
+      ]
+    },
+    professor: {
+      title: "Área do Professor",
+      items: [
+        ["⬇️", "Baixe o <b>modelo de Excel</b> já no formato certo."],
+        ["📝", "Preencha uma linha por série: Semana, Dia, Exercício, Séries, Repetições, Descanso, Observação."],
+        ["📄", "Toque na área de importar e escolha o arquivo <b>.xlsx</b> — o treino é montado automaticamente."],
+        ["🔁", "Ao importar de novo, o app pergunta antes de substituir o treino atual."]
+      ]
+    }
+  };
+
+  function openHelp(key) {
+    const h = HELP[key] || HELP.home;
+    const list = h.items
+      .map((it) => `<li><span class="hi">${it[0]}</span><span>${it[1]}</span></li>`)
+      .join("");
+    modal(`
+      <div class="row between" style="margin-bottom:6px">
+        <h2>Ajuda · ${esc(h.title)}</h2>
+      </div>
+      <ul class="help-list">${list}</ul>
+      <button class="btn" style="margin-top:16px" id="help-ok">Entendi</button>`);
+    qs("#help-ok").addEventListener("click", closeModal);
   }
 
   // Banner "Nova versão disponível" (acionado pelo service worker).

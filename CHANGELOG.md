@@ -5,6 +5,13 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.2.0] — 2026-07-15
+
+### Barra superior e ajuda (estilo ELTECH)
+- Nova **barra superior fixa** com o nome do app (ELTECH Personality) e um botão **?** de ajuda.
+- O botão **?** abre uma **ajuda específica de cada página** (Início, Treinos, execução do
+  treino, Evolução, Agenda, Perfil e Área do Professor).
+
 ## [1.1.0] — 2026-07-15
 
 ### Visual e avisos
