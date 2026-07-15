@@ -5,7 +5,7 @@
   "use strict";
 
   // Versão do app — manter igual em version.json e sw.js (CACHE_VERSION).
-  const APP_VERSION = "1.3.3";
+  const APP_VERSION = "1.4.0";
 
   // ---- Estado ------------------------------------------------------------
   const state = {
@@ -667,49 +667,62 @@
   };
 
   // ---- Perfil ------------------------------------------------------------
+  const DOOR_SVG =
+    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>`;
+
   VIEWS.perfil = async function () {
     const u = state.user;
     const theme = currentTheme();
+    const photo = (u.profile && u.profile.photo) || "";
     renderScreen(
       `
       <h1>Perfil</h1>
       <div class="card center">
-        <div style="font-size:3.4rem">👤</div>
-        <h2 style="margin-top:6px">${esc(u.name)}</h2>
-        <div class="muted">${esc(u.email)}</div>
-        ${u.isOwner ? `<span class="pill primary" style="margin-top:8px">Dono deste aparelho</span>` : ""}
+        <div class="avatar-field" id="avatar-field" title="Toque para adicionar sua foto">
+          ${photo ? `<img src="${photo}" alt="foto" />` : `<span class="avatar-ph">+<br><small>FOTO</small></span>`}
+        </div>
+        <input type="file" id="avatar-input" accept="image/*" capture="user" hidden />
+        <input class="name-edit" id="name-edit" value="${esc(u.name)}" maxlength="40" aria-label="Seu nome" />
       </div>
 
       <div class="card">
         <div class="row between">
-          <div><h3>Tema escuro</h3><div class="muted small">Aparência do app</div></div>
-          <label class="checkbox-row"><input type="checkbox" id="theme-toggle" ${theme === "dark" ? "checked" : ""}/></label>
+          <h3>Aparência do app</h3>
+          <label class="switch">
+            <input type="checkbox" id="theme-toggle" ${theme === "dark" ? "checked" : ""}/>
+            <span class="switch-track"><span class="switch-knob"></span></span>
+          </label>
         </div>
       </div>
 
       <div class="card tap" id="prof-area">
-        <div class="row between"><h3>👨‍🏫 Área do Professor</h3><span>›</span></div>
+        <div class="row between"><h3>Área do Professor</h3><span>›</span></div>
         <div class="muted small">Importar planilha de treino, gerenciar o plano</div>
       </div>
 
-      <div class="card">
-        <h3>Backup dos dados</h3>
-        <div class="muted small" style="margin-bottom:12px">Salve ou restaure tudo (conta, treinos e registros).</div>
-        <div class="stack">
-          <button class="btn secondary" id="export">⬇ Exportar backup (.json)</button>
-          <button class="btn secondary" id="import">⬆ Importar backup</button>
-          <input type="file" id="import-file" accept="application/json" hidden />
-        </div>
-      </div>
-
-      <button class="btn danger" id="logout">Sair da conta</button>
+      <button class="btn danger" id="logout">${DOOR_SVG} Sair da conta</button>
       <p class="center muted small" style="margin-top:14px">ELTECH Personality · v${APP_VERSION}</p>`,
       { active: "perfil" }
     );
 
+    // Foto (campo redondo)
+    const field = qs("#avatar-field");
+    const avInput = qs("#avatar-input");
+    field.addEventListener("click", () => avInput.click());
+    avInput.addEventListener("change", (e) => {
+      if (e.target.files[0]) setUserPhoto(e.target.files[0]);
+    });
+
+    // Nome editável (atualiza em todo lugar e no login)
+    const nameEl = qs("#name-edit");
+    nameEl.addEventListener("change", () => saveUserName(nameEl.value));
+    nameEl.addEventListener("keydown", (e) => { if (e.key === "Enter") nameEl.blur(); });
+
+    // Tema (botão disjuntor)
     qs("#theme-toggle").addEventListener("change", (e) =>
       applyTheme(e.target.checked ? "dark" : "light")
     );
+
     qs("#prof-area").addEventListener("click", () => navigate("professor"));
     qs("#logout").addEventListener("click", () =>
       confirmModal("Sair?", "Você precisará entrar novamente. Seus dados continuam salvos.", () => {
@@ -719,13 +732,57 @@
         navigate("login");
       }, "Sair", true)
     );
-
-    qs("#export").addEventListener("click", exportBackup);
-    qs("#import").addEventListener("click", () => qs("#import-file").click());
-    qs("#import-file").addEventListener("change", (e) => {
-      if (e.target.files[0]) importBackup(e.target.files[0]);
-    });
   };
+
+  // Salva o nome no banco e no estado (reflete em toda a interface e no login).
+  async function saveUserName(name) {
+    name = (name || "").trim();
+    if (!name) { toast("Informe um nome.", "error"); return; }
+    const full = await DB.get("users", state.user.email);
+    if (!full) return;
+    full.name = name;
+    await DB.put("users", full);
+    state.user.name = name;
+    toast("Nome atualizado!", "success");
+  }
+
+  // Redimensiona e comprime a imagem, salvando como foto de perfil.
+  async function setUserPhoto(file) {
+    try {
+      const dataUrl = await resizeImage(file, 320, 0.82);
+      const full = await DB.get("users", state.user.email);
+      if (!full) return;
+      full.profile = full.profile || {};
+      full.profile.photo = dataUrl;
+      await DB.put("users", full);
+      state.user.profile = state.user.profile || {};
+      state.user.profile.photo = dataUrl;
+      toast("Foto atualizada!", "success");
+      VIEWS.perfil();
+    } catch (e) {
+      toast("Não foi possível carregar a imagem.", "error");
+    }
+  }
+
+  function resizeImage(file, maxSize, quality) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      const img = new Image();
+      reader.onload = () => (img.src = reader.result);
+      reader.onerror = reject;
+      img.onload = () => {
+        let { width, height } = img;
+        if (width >= height && width > maxSize) { height = Math.round((height * maxSize) / width); width = maxSize; }
+        else if (height > maxSize) { width = Math.round((width * maxSize) / height); height = maxSize; }
+        const canvas = document.createElement("canvas");
+        canvas.width = width; canvas.height = height;
+        canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
 
   // ---- Área do Professor -------------------------------------------------
   VIEWS.professor = async function () {

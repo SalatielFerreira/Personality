@@ -5,6 +5,17 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.4.0] — 2026-07-15
+
+### Perfil reformulado
+- **Foto de perfil**: campo redondo para o usuário inserir a própria imagem (comprimida
+  automaticamente e salva no aparelho). No celular abre a câmera/galeria.
+- **Nome editável** direto na tela; a alteração reflete em todo o app e no login.
+- No **login**, é possível entrar com **e-mail ou nome/usuário** (mesma senha).
+- Escolha de tema virou um **botão tipo interruptor** (claro/escuro) ao lado de "Aparência do app".
+- Removidos: e-mail, "Dono deste aparelho" e a seção de Backup.
+- **Área do Professor** mantida (sem o emoji) e **"Sair da conta"** agora tem ícone de porta.
+
 ## [1.3.3] — 2026-07-15
 
 ### Ajuste do título
