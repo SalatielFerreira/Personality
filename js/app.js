@@ -5,7 +5,7 @@
   "use strict";
 
   // Versão do app — manter igual em version.json e sw.js (CACHE_VERSION).
-  const APP_VERSION = "1.9.5";
+  const APP_VERSION = "1.10.0";
 
   // ---- Estado ------------------------------------------------------------
   const state = {
@@ -90,7 +90,8 @@
   function parseHash() {
     const raw = (location.hash || "#/home").replace(/^#\/?/, "");
     const parts = raw.split("/").filter(Boolean);
-    return { name: parts[0] || "home", params: parts.slice(1) };
+    const decode = (p) => { try { return decodeURIComponent(p); } catch (e) { return p; } };
+    return { name: parts[0] || "home", params: parts.slice(1).map(decode) };
   }
 
   function navigate(path) {
@@ -348,7 +349,7 @@
             <span class="pill primary">${esc(state.plan.fileName ? "Plano ativo" : "Treino")}</span>
             <span class="muted small">Semana ${week.week}</span>
           </div>
-          <h2 style="margin-top:10px">${next ? "Treino " + esc(next.day) : "Semana concluída 🎉"}</h2>
+          <h2 style="margin-top:10px">${next ? esc(next.day) : "Semana concluída 🎉"}</h2>
           <p class="muted">${next ? next.exercises.length + " exercícios" : "Ótimo trabalho!"}</p>
           <div class="progress" style="margin:12px 0 6px"><span style="width:${prog}%"></span></div>
           <div class="row between"><span class="muted small">Progresso da semana</span><span class="small" style="font-weight:700">${prog}%</span></div>
@@ -389,7 +390,7 @@
         e.stopPropagation();
         const week = state.plan.weeks[0];
         const next = nextIncompleteDay(week) || week.days[0];
-        navigate(`workout/${week.week}/${next.day}`);
+        navigate(`workout/${week.week}/${encodeURIComponent(next.day)}`);
       });
     }
   };
@@ -423,7 +424,7 @@
         return `
         <div class="card tap" data-day="${esc(d.day)}">
           <div class="row between">
-            <h3>Treino ${esc(d.day)}</h3>
+            <h3>${esc(d.day)}</h3>
             <span class="pill ${prog === 100 ? "primary" : "info"}">${prog}%</span>
           </div>
           <p class="muted small">${d.exercises.length} exercícios · ${d.exercises.reduce((a, e) => a + e.sets, 0)} séries</p>
@@ -446,7 +447,7 @@
       })
     );
     qsa(".card[data-day]").forEach((c) =>
-      c.addEventListener("click", () => navigate(`workout/${week.week}/${c.dataset.day}`))
+      c.addEventListener("click", () => navigate(`workout/${week.week}/${encodeURIComponent(c.dataset.day)}`))
     );
   };
 
@@ -470,7 +471,7 @@
       `
       <div class="top-header">
         <button class="btn-link" id="back">← Treinos</button>
-        <span class="pill primary">Semana ${weekNum} · Treino ${esc(dayKey)}</span>
+        <span class="pill primary">Semana ${weekNum} · ${esc(dayKey)}</span>
       </div>
       <div class="progress" style="margin-bottom:4px"><span id="w-progress" style="width:${dayProgress(weekNum, day)}%"></span></div>
       <p class="muted small" id="w-progress-label">${dayProgress(weekNum, day)}% concluído</p>
@@ -1196,9 +1197,9 @@
     treinos: {
       title: "Treinos",
       items: [
-        ["📅", "Escolha a <b>semana</b> nos botões do topo."],
-        ["🅰️", "Cada card é um tipo de treino (A, B, C...). Toque para executá-lo."],
-        ["✅", "A porcentagem mostra quanto daquele treino você já concluiu."]
+        ["📅", "Escolha a <b>semana do mês</b> (1 a 4) nos botões do topo."],
+        ["📆", "Cada card é um <b>dia da semana</b> (Domingo a Sábado). Toque para executar o treino do dia."],
+        ["✅", "A porcentagem mostra quanto daquele dia você já concluiu."]
       ]
     },
     workout: {

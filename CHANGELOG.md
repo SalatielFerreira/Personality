@@ -5,6 +5,16 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.10.0] — 2026-07-20
+
+### Treino por semana do mês e dia da semana
+- O treino agora usa **Semana = semana do mês (1 a 4)** e **Dia = dia da semana**
+  (Domingo a Sábado). O app ordena os dias na ordem correta e exibe o nome do dia.
+- Leitura do Excel ficou **robusta**: ignora uma linha de título (ex.: "Nome do Treino")
+  acima do cabeçalho.
+- **Modelo Excel sempre atualizado na raiz do projeto**: `eltech_personality_modelo.xlsx`
+  (o personal preenche e envia ao aluno). Gerado por `npm run modelo` (tools/gerar-modelo.mjs).
+
 ## [1.9.5] — 2026-07-15
 
 ### Cor e Área do Aluno

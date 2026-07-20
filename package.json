@@ -1,0 +1,12 @@
+{
+  "name": "eltech-personality",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Ferramentas de build do ELTECH Personality (gera o modelo Excel para o personal).",
+  "scripts": {
+    "modelo": "node tools/gerar-modelo.mjs"
+  },
+  "devDependencies": {
+    "xlsx": "^0.18.5"
+  }
+}

@@ -13,5 +13,6 @@ desktop.ini
 *.tmp
 *~
 
-# Dependências (caso adicione ferramentas no futuro)
+# Dependências (ferramenta de build p/ gerar o modelo Excel)
 node_modules/
+package-lock.json

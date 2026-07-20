@@ -46,49 +46,66 @@
     observacao: "obs", obs: "obs", observacoes: "obs"
   };
 
-  function mapRow(row) {
-    const out = {};
-    Object.keys(row).forEach((k) => {
-      const field = HEADER_MAP[normalizeKey(k)];
-      if (field) out[field] = row[k];
-    });
-    return out;
+  // Dias da semana: forma canônica p/ exibir + ordem cronológica.
+  const DAY_CANON = {
+    domingo: "Domingo", segunda: "Segunda", terca: "Terça", quarta: "Quarta",
+    quinta: "Quinta", sexta: "Sexta", sabado: "Sábado"
+  };
+  const DAY_ORDER = { domingo: 0, segunda: 1, terca: 2, quarta: 3, quinta: 4, sexta: 5, sabado: 6 };
+  function canonDay(v) {
+    const n = normalizeKey(v);
+    return { name: DAY_CANON[n] || String(v || "").trim() || "—", order: n in DAY_ORDER ? DAY_ORDER[n] : 99 };
   }
 
   function parsePlanSheet(XLSX, sheet, fileName) {
     if (!sheet) return null;
-    const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
-    if (!rows.length) return null;
+    const aoa = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+    if (!aoa.length) return null;
+
+    // Encontra a linha de cabeçalho (mesmo que haja título "Nome do Treino" acima).
+    let headerIdx = -1;
+    let col = null;
+    for (let i = 0; i < aoa.length; i++) {
+      const m = {};
+      (aoa[i] || []).forEach((c, idx) => {
+        const f = HEADER_MAP[normalizeKey(c)];
+        if (f && m[f] == null) m[f] = idx;
+      });
+      if (m.exercise != null) { headerIdx = i; col = m; break; }
+    }
+    if (headerIdx < 0) return null;
 
     const weeksMap = {};
     let count = 0;
-    rows.forEach((raw) => {
-      const r = mapRow(raw);
-      if (!r.exercise || String(r.exercise).trim() === "") return;
-      const week = parseInt(r.week, 10) || 1;
-      const day = String(r.day || "A").trim().toUpperCase();
+    for (let i = headerIdx + 1; i < aoa.length; i++) {
+      const row = aoa[i] || [];
+      const exercise = String(row[col.exercise] == null ? "" : row[col.exercise]).trim();
+      if (!exercise) continue;
+      const week = parseInt(row[col.week], 10) || 1;
+      const d = canonDay(col.day != null ? row[col.day] : "");
       weeksMap[week] = weeksMap[week] || {};
-      weeksMap[week][day] = weeksMap[week][day] || [];
-      weeksMap[week][day].push({
-        name: String(r.exercise).trim(),
-        sets: parseInt(r.sets, 10) || 3,
-        reps: String(r.reps || "").trim() || "10",
-        rest: parseInt(r.rest, 10) || 60,
-        obs: String(r.obs || "").trim()
+      weeksMap[week][d.name] = weeksMap[week][d.name] || { order: d.order, exercises: [] };
+      weeksMap[week][d.name].exercises.push({
+        name: exercise,
+        sets: parseInt(row[col.sets], 10) || 3,
+        reps: String(col.reps != null ? row[col.reps] : "").trim() || "10",
+        rest: parseInt(row[col.rest], 10) || 60,
+        obs: String(col.obs != null ? row[col.obs] : "").trim()
       });
       count++;
-    });
+    }
     if (count === 0) return null;
 
     const weeks = Object.keys(weeksMap)
       .map(Number)
       .sort((a, b) => a - b)
-      .map((weekNum) => ({
-        week: weekNum,
-        days: Object.keys(weeksMap[weekNum])
-          .sort()
-          .map((dayKey) => ({ day: dayKey, exercises: weeksMap[weekNum][dayKey] }))
-      }));
+      .map((weekNum) => {
+        const days = Object.keys(weeksMap[weekNum])
+          .map((name) => ({ day: name, order: weeksMap[weekNum][name].order, exercises: weeksMap[weekNum][name].exercises }))
+          .sort((a, b) => a.order - b.order || a.day.localeCompare(b.day))
+          .map((d) => ({ day: d.day, exercises: d.exercises }));
+        return { week: weekNum, days };
+      });
 
     return { fileName: fileName || "", totalExercises: count, totalWeeks: weeks.length, weeks };
   }
@@ -269,19 +286,27 @@
     const XLSX = await loadXLSX();
     const wb = XLSX.utils.book_new();
 
-    // --- Aba Treino ---
-    const treinoRows = [
-      { Semana: 1, Dia: "A", Exercício: "Supino Reto", Séries: 4, Repetições: "10", Descanso: 60, Observação: "Controle na descida" },
-      { Semana: 1, Dia: "A", Exercício: "Crucifixo", Séries: 3, Repetições: "12", Descanso: 45, Observação: "Movimento lento" },
-      { Semana: 1, Dia: "A", Exercício: "Tríceps Barra", Séries: 3, Repetições: "15", Descanso: 45, Observação: "" },
-      { Semana: 1, Dia: "B", Exercício: "Agachamento", Séries: 4, Repetições: "10", Descanso: 90, Observação: "Amplitude total" },
-      { Semana: 1, Dia: "B", Exercício: "Leg Press", Séries: 4, Repetições: "12", Descanso: 90, Observação: "" },
-      { Semana: 2, Dia: "A", Exercício: "Supino Reto", Séries: 4, Repetições: "8", Descanso: 75, Observação: "Aumentar carga" }
+    // --- Aba Treino (Semana do mês 1-4 · Dia da semana) ---
+    const DIAS = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
+    const treinoAoa = [
+      ["MODELO DE TREINO — Semana = semana do mês (1 a 4) · Dia = dia da semana"],
+      ["Semana", "Dia", "Exercício", "Séries", "Repetições", "Descanso", "Observação"]
     ];
-    const wsTreino = XLSX.utils.json_to_sheet(treinoRows, {
-      header: ["Semana", "Dia", "Exercício", "Séries", "Repetições", "Descanso", "Observação"]
-    });
-    wsTreino["!cols"] = [{ wch: 8 }, { wch: 6 }, { wch: 24 }, { wch: 8 }, { wch: 12 }, { wch: 10 }, { wch: 28 }];
+    for (let s = 1; s <= 4; s++) {
+      DIAS.forEach((dia) => {
+        if (s === 1 && dia === "Domingo") {
+          treinoAoa.push([1, "Domingo", "Cadeira Extensora", 4, "10-12", 65, ""]);
+          treinoAoa.push([1, "Domingo", "Cadeira Flexora", 4, "10-15", 45, ""]);
+          treinoAoa.push([1, "Domingo", "Agachamento", 4, "12-15", 30, ""]);
+        } else if (s === 1 && dia === "Segunda") {
+          treinoAoa.push([1, "Segunda", "Rosca Direta", 3, "20", 20, ""]);
+        } else {
+          treinoAoa.push([s, dia, "", "", "", "", ""]);
+        }
+      });
+    }
+    const wsTreino = XLSX.utils.aoa_to_sheet(treinoAoa);
+    wsTreino["!cols"] = [{ wch: 8 }, { wch: 10 }, { wch: 24 }, { wch: 8 }, { wch: 12 }, { wch: 10 }, { wch: 28 }];
     XLSX.utils.book_append_sheet(wb, wsTreino, "Treino");
 
     // --- Aba Ficha do Aluno ---
