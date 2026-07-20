@@ -5,6 +5,12 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.9.1] — 2026-07-15
+
+### Fundo
+- Novo fundo com **ondas fluidas nos cantos** (superior direito e inferior esquerdo),
+  nas cores do tema — verde/azul no escuro e tons suaves no claro.
+
 ## [1.9.0] — 2026-07-15
 
 ### Fundo (background)

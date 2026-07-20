@@ -1,38 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 1024" preserveAspectRatio="xMidYMid slice">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1250 2000" preserveAspectRatio="xMidYMid slice">
   <defs>
-    <linearGradient id="base" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#0c121a"/>
-      <stop offset="0.55" stop-color="#080c12"/>
-      <stop offset="1" stop-color="#05080c"/>
+    <linearGradient id="front" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#00D26A"/>
+      <stop offset="1" stop-color="#00B4FF"/>
     </linearGradient>
-    <radialGradient id="green" cx="50%" cy="50%" r="50%">
-      <stop offset="0" stop-color="#00D26A" stop-opacity="0.30"/>
-      <stop offset="1" stop-color="#00D26A" stop-opacity="0"/>
-    </radialGradient>
-    <radialGradient id="blue" cx="50%" cy="50%" r="50%">
-      <stop offset="0" stop-color="#00B4FF" stop-opacity="0.26"/>
-      <stop offset="1" stop-color="#00B4FF" stop-opacity="0"/>
-    </radialGradient>
-    <radialGradient id="teal" cx="50%" cy="50%" r="50%">
-      <stop offset="0" stop-color="#00E0A0" stop-opacity="0.10"/>
-      <stop offset="1" stop-color="#00E0A0" stop-opacity="0"/>
-    </radialGradient>
+    <linearGradient id="back" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0c6b53"/>
+      <stop offset="1" stop-color="#0b4f77"/>
+    </linearGradient>
   </defs>
-  <rect width="1440" height="1024" fill="url(#base)"/>
-  <ellipse cx="1200" cy="90" rx="520" ry="420" fill="url(#green)"/>
-  <ellipse cx="140" cy="980" rx="560" ry="460" fill="url(#blue)"/>
-  <ellipse cx="760" cy="520" rx="620" ry="520" fill="url(#teal)"/>
-  <g stroke="#ffffff" stroke-opacity="0.035" stroke-width="2">
-    <line x1="-160" y1="360" x2="1600" y2="-120"/>
-    <line x1="-160" y1="560" x2="1600" y2="80"/>
-    <line x1="-160" y1="760" x2="1600" y2="280"/>
-    <line x1="-160" y1="960" x2="1600" y2="480"/>
-  </g>
-  <g fill="#ffffff" fill-opacity="0.028">
-    <circle cx="1180" cy="760" r="3"/>
-    <circle cx="1260" cy="640" r="2"/>
-    <circle cx="300" cy="180" r="2.5"/>
-    <circle cx="520" cy="120" r="2"/>
-    <circle cx="980" cy="240" r="2"/>
-  </g>
+  <rect width="1250" height="2000" fill="#0A0E13"/>
+  <!-- canto superior direito -->
+  <path fill="url(#back)" d="M690,-20 C820,190 630,395 800,575 C935,720 1120,715 1270,630 L1270,-20 Z"/>
+  <path fill="url(#front)" d="M885,-20 C975,175 840,365 985,545 C1085,665 1195,645 1270,585 L1270,-20 Z"/>
+  <!-- canto inferior esquerdo -->
+  <path fill="url(#back)" d="M560,2020 C430,1810 620,1605 450,1425 C315,1280 130,1285 -20,1370 L-20,2020 Z"/>
+  <path fill="url(#front)" d="M365,2020 C275,1825 410,1635 265,1455 C165,1335 55,1355 -20,1415 L-20,2020 Z"/>
 </svg>
