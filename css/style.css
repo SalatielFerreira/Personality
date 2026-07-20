@@ -71,7 +71,7 @@ button, input, select, textarea { font-family: inherit; }
 /* ---- Fundo elegante por tema (imagem SVG, offline) ------------------- */
 .bg-image {
   position: fixed; inset: 0; z-index: -1;
-  background: var(--bg) url("../assets/bg-dark.svg") center center / cover no-repeat;
+  background: var(--bg) url("../assets/bg-dark.svg") center / 100% 100% no-repeat;
 }
 [data-theme="light"] .bg-image {
   background-image: url("../assets/bg-light.svg");

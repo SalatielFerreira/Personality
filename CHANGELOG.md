@@ -5,6 +5,12 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.9.2] — 2026-07-15
+
+### Correção do fundo
+- O fundo agora **preenche a tela inteira** (as ondas ficam sempre nos cantos), corrigindo
+  o caso em que a imagem retrato era recortada em telas largas e as ondas sumiam.
+
 ## [1.9.1] — 2026-07-15
 
 ### Fundo
