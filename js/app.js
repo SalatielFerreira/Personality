@@ -5,7 +5,7 @@
   "use strict";
 
   // Versão do app — manter igual em version.json e sw.js (CACHE_VERSION).
-  const APP_VERSION = "1.9.4";
+  const APP_VERSION = "1.9.5";
 
   // ---- Estado ------------------------------------------------------------
   const state = {
@@ -722,19 +722,18 @@
       body = emptyState(
         "📋",
         "Ficha ainda não disponível",
-        "Seu personal ainda não enviou seus dados. Peça para ele importar a ficha na Área do Professor."
+        "Seu personal vai te enviar um arquivo Excel. Importe-o em Perfil → Área do Professor para ver sua ficha aqui."
       );
     }
 
     renderScreen(
       `
       <div class="top-header">
-        <button class="btn-link" id="back">← Perfil</button>
-        <span class="pill info">Ficha</span>
+        <button class="btn sm back-green" id="back">← Perfil</button>
       </div>
       <h1>Dados do aluno</h1>
       ${body}`,
-      { nav: false, help: "aluno" }
+      { nav: true, active: "perfil", help: "aluno" }
     );
     qs("#back").addEventListener("click", () => navigate("perfil"));
   };

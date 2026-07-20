@@ -5,6 +5,15 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.9.5] — 2026-07-15
+
+### Cor e Área do Aluno
+- O app ficou **todo verde**: o gradiente verde-azul e os detalhes azuis viraram o
+  mesmo **verde** do botão voltar.
+- **Dados do aluno**: botão voltar verde, removido o selo "Ficha" e adicionada a barra inferior.
+- Corrigida a mensagem quando não há ficha (o personal envia o Excel e o aluno importa
+  em Perfil → Área do Professor).
+
 ## [1.9.4] — 2026-07-15
 
 ### Área do Professor

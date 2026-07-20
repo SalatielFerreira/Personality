@@ -14,10 +14,10 @@
 
   /* Marca esportiva */
   --primary: #00D26A;
-  --primary-2: #00B4FF;
+  --primary-2: #00D26A;
   --primary-ink: #FFFFFF; /* texto sobre fundo verde: sempre branco */
-  --grad: linear-gradient(135deg, #00D26A, #00B4FF);
-  --info: #00B4FF;
+  --grad: linear-gradient(135deg, #00D26A, #00D26A);
+  --info: #00D26A;
   --green: #00D26A;
   --danger: #FF4D4F;
   --warn: #FFC53D;
@@ -195,7 +195,7 @@ textarea.input, textarea.form-input { min-height: 70px; resize: vertical; }
 /* ---- Badges / pills --------------------------------------------------- */
 .pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 999px; font-size: .76rem; font-weight: 700; background: var(--glass-input); color: var(--text2); }
 .pill.primary { background: rgba(0, 210, 106, .16); color: var(--primary); }
-.pill.info { background: rgba(0, 180, 255, .16); color: var(--info); }
+.pill.info { background: rgba(0, 210, 106, .16); color: var(--info); }
 .online-badge { display: inline-flex; align-items: center; gap: 6px; font-size: .76rem; color: var(--text2); }
 .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); box-shadow: 0 0 8px var(--success); }
 .dot.off { background: var(--warn); box-shadow: 0 0 8px var(--warn); }
