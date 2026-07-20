@@ -5,6 +5,12 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.9.4] — 2026-07-15
+
+### Área do Professor
+- Removido o selo "Professor"; botão **voltar** agora é verde com texto branco.
+- A tela passa a exibir a **barra inferior** de navegação.
+
 ## [1.9.3] — 2026-07-15
 
 ### Área do Professor

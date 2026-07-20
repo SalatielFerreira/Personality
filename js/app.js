@@ -5,7 +5,7 @@
   "use strict";
 
   // Versão do app — manter igual em version.json e sw.js (CACHE_VERSION).
-  const APP_VERSION = "1.9.3";
+  const APP_VERSION = "1.9.4";
 
   // ---- Estado ------------------------------------------------------------
   const state = {
@@ -949,8 +949,7 @@
     renderScreen(
       `
       <div class="top-header">
-        <button class="btn-link" id="back">← Perfil</button>
-        <span class="pill info">Professor</span>
+        <button class="btn sm back-green" id="back">← Perfil</button>
       </div>
       <h1>Área do Professor</h1>
 
@@ -967,7 +966,7 @@
 
       ${planSummary}
       ${fichaSummary}`,
-      { nav: false, help: "professor" }
+      { nav: true, active: "perfil", help: "professor" }
     );
 
     qs("#back").addEventListener("click", () => navigate("perfil"));
