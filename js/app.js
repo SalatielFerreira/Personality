@@ -5,7 +5,7 @@
   "use strict";
 
   // Versão do app — manter igual em version.json e sw.js (CACHE_VERSION).
-  const APP_VERSION = "1.9.2";
+  const APP_VERSION = "1.9.3";
 
   // ---- Estado ------------------------------------------------------------
   const state = {
@@ -955,14 +955,9 @@
       <h1>Área do Professor</h1>
 
       <div class="card">
-        <h3>1. Baixar modelo</h3>
-        <p class="muted small">Uma planilha só, com as abas <b>Treino</b> e <b>Ficha do Aluno</b>
-        (e uma aba de <b>Instruções</b>). Preencha e importe aqui mesmo.</p>
-        <button class="btn secondary" id="tpl">Baixar modelo (.xlsx)</button>
-      </div>
-
-      <div class="card">
-        <h3>2. Importar dados</h3>
+        <h3>Importar dados</h3>
+        <p class="muted small">Selecione a planilha (.xlsx) enviada pelo personal, com as abas
+        <b>Treino</b> e <b>Ficha do Aluno</b>.</p>
         <div class="file-drop" id="drop">
           <div style="font-size:2rem">📄</div>
           <p>Toque para escolher o arquivo <b>.xlsx</b><br/><span class="small">ou arraste aqui</span></p>
@@ -976,10 +971,6 @@
     );
 
     qs("#back").addEventListener("click", () => navigate("perfil"));
-    qs("#tpl").addEventListener("click", async () => {
-      try { await Excel.downloadTemplate(); toast("Modelo baixado!", "success"); }
-      catch (e) { toast(e.message, "error"); }
-    });
 
     const drop = qs("#drop");
     const fileInput = qs("#xlsx-file");
@@ -1249,9 +1240,9 @@
     professor: {
       title: "Área do Professor",
       items: [
-        ["⬇️", "Baixe o <b>modelo</b> — um só arquivo com as abas <b>Treino</b>, <b>Ficha do Aluno</b> e <b>Instruções</b>."],
-        ["📝", "Na aba Treino: uma linha por série. Na aba Ficha: preencha o que quiser exibir (o resto fica oculto)."],
-        ["📄", "Toque em <b>Importar dados</b> e escolha o <b>.xlsx</b> — treino e ficha são lidos do mesmo arquivo."],
+        ["📄", "Toque em <b>Importar dados</b> e escolha a planilha <b>.xlsx</b> enviada pelo personal."],
+        ["📊", "O mesmo arquivo abastece o <b>treino</b> (aba Treino) e a <b>ficha</b> (aba Ficha do Aluno)."],
+        ["👁️", "Na ficha, só aparecem os campos preenchidos — o resto fica oculto."],
         ["🔁", "Ao importar de novo, o app pergunta antes de substituir os dados atuais."]
       ]
     }

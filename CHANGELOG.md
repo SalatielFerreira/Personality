@@ -5,6 +5,12 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.9.3] — 2026-07-15
+
+### Área do Professor
+- Removido o "Baixar modelo" — a área agora tem **apenas Importar dados** (o modelo fica com
+  o personal, que preenche e envia ao aluno).
+
 ## [1.9.2] — 2026-07-15
 
 ### Correção do fundo
