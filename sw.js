@@ -7,7 +7,7 @@
  * e em js/app.js -> APP_VERSION). Isso troca o cache e dispara o aviso
  * "Nova versão disponível" para quem já está com o app aberto.
  */
-const CACHE_VERSION = "1.8.0";
+const CACHE_VERSION = "1.9.0";
 const CACHE_NAME = `eltech-personality-v${CACHE_VERSION}`;
 
 const APP_SHELL = [
@@ -21,7 +21,9 @@ const APP_SHELL = [
   "./manifest.json",
   "./version.json",
   "./assets/icon.svg",
-  "./assets/icon-maskable.svg"
+  "./assets/icon-maskable.svg",
+  "./assets/bg-dark.svg",
+  "./assets/bg-light.svg"
 ];
 
 self.addEventListener("install", (event) => {

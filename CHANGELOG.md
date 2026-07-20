@@ -5,6 +5,12 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.9.0] — 2026-07-15
+
+### Fundo (background)
+- Novo **fundo elegante** em todas as páginas, com versões próprias para o **tema claro** e o
+  **escuro** (imagens SVG leves, funcionam offline).
+
 ## [1.8.0] — 2026-07-15
 
 ### Excel único (treino + ficha)

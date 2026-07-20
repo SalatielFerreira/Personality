@@ -68,22 +68,13 @@ body {
 }
 button, input, select, textarea { font-family: inherit; }
 
-/* ---- Fundo com brilho (sem imagem externa) --------------------------- */
+/* ---- Fundo elegante por tema (imagem SVG, offline) ------------------- */
 .bg-image {
-  position: fixed; inset: 0; z-index: -1; background: var(--bg);
-  background-image:
-    radial-gradient(60% 45% at 82% 8%, rgba(0, 180, 255, .18), transparent 60%),
-    radial-gradient(55% 40% at 12% 88%, rgba(0, 210, 106, .20), transparent 60%),
-    radial-gradient(40% 30% at 50% 50%, rgba(0, 210, 106, .05), transparent 70%);
+  position: fixed; inset: 0; z-index: -1;
+  background: var(--bg) url("../assets/bg-dark.svg") center center / cover no-repeat;
 }
-.bg-image::after {
-  content: ""; position: absolute; inset: 0;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, .022) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, .022) 1px, transparent 1px);
-  background-size: 44px 44px;
-  -webkit-mask-image: radial-gradient(circle at 50% 35%, #000, transparent 85%);
-  mask-image: radial-gradient(circle at 50% 35%, #000, transparent 85%);
+[data-theme="light"] .bg-image {
+  background-image: url("../assets/bg-light.svg");
 }
 
 /* ---- Glass utils ------------------------------------------------------ */
