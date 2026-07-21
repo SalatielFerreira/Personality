@@ -5,7 +5,7 @@
   "use strict";
 
   // Versão do app — manter igual em version.json e sw.js (CACHE_VERSION).
-  const APP_VERSION = "1.14.2";
+  const APP_VERSION = "1.14.3";
 
   // ---- Estado ------------------------------------------------------------
   const state = {
@@ -678,7 +678,7 @@
         <div class="avatar-field" id="avatar-field" title="Toque para adicionar sua foto">
           ${photo ? `<img src="${photo}" alt="foto" />` : `<span class="avatar-ph">${USER_ICON}</span>`}
         </div>
-        <input type="file" id="avatar-input" accept="image/*" capture="user" hidden />
+        <input type="file" id="avatar-input" accept="image/*" hidden />
         <input class="name-edit" id="name-edit" value="${esc(u.name)}" maxlength="40" aria-label="Seu nome" />
       </div>
 
