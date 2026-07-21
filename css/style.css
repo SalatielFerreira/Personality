@@ -359,7 +359,7 @@ textarea.input, textarea.form-input { min-height: 70px; resize: vertical; }
   position: fixed; left: 50%; bottom: calc(var(--nav-h) + env(safe-area-inset-bottom) + 14px);
   transform: translateX(-50%) translateY(24px);
   display: flex; align-items: center; gap: 10px;
-  padding: 9px 10px 9px 14px; border-radius: 14px; z-index: 92;
+  padding: 9px 12px 9px 14px; border-radius: 14px; z-index: 92;
   border: 1px solid var(--primary); color: var(--text); font-weight: 600;
   max-width: 96%; opacity: 0; transition: opacity .3s ease, transform .3s ease;
 }
