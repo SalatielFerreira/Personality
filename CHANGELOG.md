@@ -5,6 +5,12 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.14.1] — 2026-07-21
+
+### Avisos de instalar/atualizar
+- Texto padronizado para **"Eltech Personality"** com botões **"Baixar app"** e **"Atualizar app"**.
+- Ajustados para caber por extenso em telas pequenas (texto e botão sem quebrar).
+
 ## [1.14.0] — 2026-07-21
 
 ### Vídeo do exercício (YouTube)

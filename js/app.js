@@ -5,7 +5,7 @@
   "use strict";
 
   // Versão do app — manter igual em version.json e sw.js (CACHE_VERSION).
-  const APP_VERSION = "1.14.0";
+  const APP_VERSION = "1.14.1";
 
   // ---- Estado ------------------------------------------------------------
   const state = {
@@ -1195,8 +1195,8 @@
     const bar = document.createElement("div");
     bar.id = "update-banner";
     bar.className = "update-banner glass";
-    bar.innerHTML = `<span>Nova versão disponível</span>
-      <button class="btn xs" id="ub-btn">Atualizar</button>`;
+    bar.innerHTML = `<span class="bn-text">Eltech Personality</span>
+      <button class="btn xs" id="ub-btn">Atualizar app</button>`;
     document.body.appendChild(bar);
     requestAnimationFrame(() => bar.classList.add("show"));
     document.getElementById("ub-btn").addEventListener("click", (e) => {
@@ -1247,7 +1247,7 @@
     const bar = document.createElement("div");
     bar.id = "install-banner";
     bar.className = "install-banner glass";
-    bar.innerHTML = `<span>Instale o ELTECH Personality no seu aparelho</span>
+    bar.innerHTML = `<span class="bn-text">Eltech Personality</span>
       <button class="btn xs" id="ib-btn">Baixar app</button>
       <button class="ib-close" id="ib-close" aria-label="Fechar">×</button>`;
     document.body.appendChild(bar);
