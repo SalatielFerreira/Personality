@@ -5,7 +5,7 @@
   "use strict";
 
   // Versão do app — manter igual em version.json e sw.js (CACHE_VERSION).
-  const APP_VERSION = "1.14.4";
+  const APP_VERSION = "1.15.0";
 
   // ---- Estado ------------------------------------------------------------
   const state = {
@@ -13,10 +13,13 @@
     plan: null,
     logs: {}, // mapa id -> log, carregado por treino
     currentWeek: null,
-    currentDay: null
+    currentDay: null,
+    activeWorkout: null, // { typeName, startMs } enquanto o cronômetro roda
+    agendaMonth: null // { y, m } mês exibido no calendário
   };
 
   const WEIGHT_STEP = 2.5;
+  let wkInterval = null; // intervalo do cronômetro de treino
 
   // ---- Helpers de DOM ----------------------------------------------------
   const app = () => document.getElementById("app");
@@ -100,6 +103,7 @@
   }
 
   async function route() {
+    if (wkInterval) { clearInterval(wkInterval); wkInterval = null; }
     const { name, params } = parseHash();
     if (!state.user && !PUBLIC_ROUTES.includes(name)) {
       return navigate("login");
@@ -408,7 +412,13 @@
       <div class="top-header">
         <button class="btn sm back-green" id="back">← Treinos</button>
       </div>
-      <h1>${esc(tp.name)}</h1>
+      <div class="wk-title">
+        <h1>${esc(tp.name)}</h1>
+        <div class="wk-timer">
+          <span class="wk-time" id="wk-time">00:00</span>
+          <button class="btn xs" id="wk-toggle">Começar</button>
+        </div>
+      </div>
       ${exCards}`,
       { nav: true, active: "treinos", help: "workout" }
     );
@@ -420,7 +430,82 @@
     qsa(".play-btn").forEach((b) =>
       b.addEventListener("click", () => openVideo(b.dataset.video, b.dataset.title))
     );
+    setupWorkoutTimer(tp);
   };
+
+  function fmtDuration(sec) {
+    sec = Math.max(0, Math.floor(sec));
+    const h = Math.floor(sec / 3600);
+    const m = Math.floor((sec % 3600) / 60);
+    const s = sec % 60;
+    const mm = String(m).padStart(2, "0");
+    const ss = String(s).padStart(2, "0");
+    return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
+  }
+  function localDateISO(d) {
+    d = d || new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  }
+
+  function setupWorkoutTimer(tp) {
+    const timeEl = qs("#wk-time");
+    const toggle = qs("#wk-toggle");
+    if (!toggle) return;
+    const isActive = () => state.activeWorkout && state.activeWorkout.typeName === tp.name;
+    const tick = () => {
+      if (!isActive()) return;
+      const s = (Date.now() - state.activeWorkout.startMs) / 1000;
+      if (timeEl) timeEl.textContent = fmtDuration(s);
+    };
+    const setRunning = () => {
+      toggle.textContent = "Finalizar";
+      toggle.classList.add("danger");
+      tick();
+      if (wkInterval) clearInterval(wkInterval);
+      wkInterval = setInterval(tick, 1000);
+    };
+    if (isActive()) setRunning();
+    else { timeEl.textContent = "00:00"; toggle.textContent = "Começar"; toggle.classList.remove("danger"); }
+
+    toggle.addEventListener("click", () => {
+      if (!isActive()) {
+        state.activeWorkout = { typeName: tp.name, startMs: Date.now() };
+        setRunning();
+      } else {
+        confirmModal(
+          "Finalizar treino?",
+          "Deseja finalizar e salvar o tempo deste treino?",
+          async () => {
+            const durationSec = Math.floor((Date.now() - state.activeWorkout.startMs) / 1000);
+            if (wkInterval) { clearInterval(wkInterval); wkInterval = null; }
+            state.activeWorkout = null;
+            await saveSession(tp, durationSec);
+            toast("Treino finalizado! ⏱ " + fmtDuration(durationSec), "success");
+            navigate("agenda");
+          },
+          "Finalizar"
+        );
+      }
+    });
+  }
+
+  async function saveSession(tp, durationSec) {
+    await loadLogs();
+    const date = localDateISO();
+    const exercises = tp.exercises.map((ex) => ({
+      name: ex.name, sets: ex.sets, reps: ex.reps, weight: getWeight(tp.name, ex.name)
+    }));
+    const rec = {
+      id: `${state.user.email}|${date}|${tp.name}|${Date.now()}`,
+      owner: state.user.email,
+      date,
+      type: tp.name,
+      durationSec,
+      exercises,
+      finishedAt: new Date().toISOString()
+    };
+    await DB.put("history", rec);
+  }
 
   // Vídeo do exercício (YouTube) — abre embutido num modal.
   function ytId(url) {
@@ -576,11 +661,89 @@
 
   // ---- Agenda (placeholder) ---------------------------------------------
   VIEWS.agenda = async function () {
+    const sessions = await DB.getAllByIndex("history", "owner", state.user.email);
+    const byDate = {};
+    sessions.forEach((s) => { (byDate[s.date] = byDate[s.date] || []).push(s); });
+
+    if (!state.agendaMonth) {
+      const n = new Date();
+      state.agendaMonth = { y: n.getFullYear(), m: n.getMonth() };
+    }
+    const { y, m } = state.agendaMonth;
+    const first = new Date(y, m, 1);
+    const startDow = first.getDay();
+    const daysInMonth = new Date(y, m + 1, 0).getDate();
+    const monthLabel = new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric" }).format(first);
+    const todayISO = localDateISO();
+    const dows = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+
+    let cells = "";
+    for (let i = 0; i < startDow; i++) cells += `<span class="cal-cell empty"></span>`;
+    for (let day = 1; day <= daysInMonth; day++) {
+      const iso = `${y}-${String(m + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+      const done = !!byDate[iso];
+      const cls = ["cal-cell", done ? "done" : "", iso === todayISO ? "today" : ""].join(" ").trim();
+      cells += `<button class="${cls}" data-date="${iso}" ${done ? "" : "disabled"}>${day}</button>`;
+    }
+
+    const total = sessions.length;
     renderScreen(
-      `<h1>Agenda</h1>${emptyState("📅", "Em breve", "Esta área estará disponível em breve.")}`,
+      `
+      <h1>Agenda</h1>
+      <div class="card cal">
+        <div class="cal-head">
+          <button class="cal-nav" id="cal-prev" aria-label="Mês anterior">‹</button>
+          <div class="cal-title">${monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1)}</div>
+          <button class="cal-nav" id="cal-next" aria-label="Próximo mês">›</button>
+        </div>
+        <div class="cal-grid cal-dows">${dows.map((d) => `<span>${d}</span>`).join("")}</div>
+        <div class="cal-grid cal-days">${cells}</div>
+        <div class="cal-legend"><span class="dot"></span> Dia com treino finalizado</div>
+      </div>
+      <p class="muted small center">${total} treino(s) finalizado(s) no total</p>`,
       { active: "agenda" }
     );
+
+    qs("#cal-prev").addEventListener("click", () => {
+      state.agendaMonth = m === 0 ? { y: y - 1, m: 11 } : { y, m: m - 1 };
+      VIEWS.agenda();
+    });
+    qs("#cal-next").addEventListener("click", () => {
+      state.agendaMonth = m === 11 ? { y: y + 1, m: 0 } : { y, m: m + 1 };
+      VIEWS.agenda();
+    });
+    qsa(".cal-cell.done").forEach((c) =>
+      c.addEventListener("click", () => showDayDetail(c.dataset.date, byDate[c.dataset.date]))
+    );
   };
+
+  function showDayDetail(iso, list) {
+    const [yy, mm, dd] = iso.split("-");
+    const dateLabel = `${dd}/${mm}/${yy}`;
+    const body = (list || [])
+      .map((s) => {
+        const exs = (s.exercises || [])
+          .map(
+            (ex) =>
+              `<div class="ficha-row"><span class="ficha-k">${esc(ex.name)}</span><span class="ficha-v">${ex.weight != null ? ex.weight + " kg" : "—"}</span></div>`
+          )
+          .join("");
+        return `
+        <div class="card" style="margin-bottom:12px">
+          <div class="row between">
+            <h3>${esc(s.type)}</h3>
+            <span class="pill primary">⏱ ${fmtDuration(s.durationSec || 0)}</span>
+          </div>
+          <div style="margin-top:8px">${exs || '<span class="muted small">Sem exercícios.</span>'}</div>
+        </div>`;
+      })
+      .join("");
+    modal(`
+      <h2 style="margin-bottom:12px">${dateLabel}</h2>
+      ${body}
+      <button class="btn" id="dd-ok">Fechar</button>`);
+    qs("#dd-ok").addEventListener("click", closeModal);
+  }
 
   // ---- Dados do aluno (ficha, só leitura) -------------------------------
   function isMarked(v) {
@@ -1110,6 +1273,7 @@
     workout: {
       title: "Treino",
       items: [
+        ["⏱️", "Toque em <b>Começar</b> para cronometrar. Ao terminar, toque em <b>Finalizar</b> — o tempo vai para a Agenda e o dia fica verde."],
         ["🏋️", "Cada card é um exercício, com séries, repetições e descanso."],
         ["⚖️", "Digite no campo <b>Peso</b> (ao lado) a carga que você usou."],
         ["▶️", "Se o personal anexou um vídeo, toque em <b>Ver vídeo</b> (precisa de internet)."],
@@ -1122,7 +1286,11 @@
     },
     agenda: {
       title: "Agenda",
-      items: [["🚧", "Esta área estará disponível em breve."]]
+      items: [
+        ["📅", "O calendário marca em <b>verde</b> os dias em que você finalizou um treino."],
+        ["👆", "Toque num dia verde para ver o treino, os pesos usados e o tempo total."],
+        ["‹ ›", "Use as setas para navegar entre os meses."]
+      ]
     },
     perfil: {
       title: "Perfil",

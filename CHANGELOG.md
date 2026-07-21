@@ -5,6 +5,16 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.15.0] — 2026-07-21
+
+### Cronômetro de treino + Agenda (calendário)
+- Na execução do treino, ao lado do título há um **cronômetro** e o botão **Começar**;
+  ao iniciar, ele vira **Finalizar** e, ao confirmar, o **tempo é salvo** e o dia fica
+  **verde no calendário**.
+- **Agenda**: calendário mensal (com navegação entre meses) que marca em **verde** os dias
+  com treino finalizado. Tocar num dia mostra o treino, o **peso de cada exercício** e o
+  **tempo total**.
+
 ## [1.14.4] — 2026-07-21
 
 ### Área do Professor
