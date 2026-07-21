@@ -5,6 +5,12 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.15.1] — 2026-07-21
+
+### Ajuste
+- Calendário da Agenda otimizado para **telas pequenas** (padding, espaçamento, células e
+  fontes proporcionais em celulares).
+
 ## [1.15.0] — 2026-07-21
 
 ### Cronômetro de treino + Agenda (calendário)
