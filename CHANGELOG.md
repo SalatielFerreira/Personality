@@ -5,6 +5,12 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.15.2] — 2026-07-21
+
+### Correção do calendário no celular
+- O calendário passou a **ocupar a largura toda** no celular (antes ficava estreito): colunas
+  com `minmax(0,1fr)`, card em 100% e células com `min-width:0`.
+
 ## [1.15.1] — 2026-07-21
 
 ### Ajuste
