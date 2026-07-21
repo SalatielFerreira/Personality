@@ -5,6 +5,12 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.15.4] — 2026-07-21
+
+### Correção do calendário
+- Removido o vão estranho na 1ª semana: em vez de células vazias, o dia 1 é posicionado
+  na coluna correta (`grid-column-start`), deixando as linhas uniformes.
+
 ## [1.15.3] — 2026-07-21
 
 ### Ajuste

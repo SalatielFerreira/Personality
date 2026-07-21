@@ -5,7 +5,7 @@
   "use strict";
 
   // Versão do app — manter igual em version.json e sw.js (CACHE_VERSION).
-  const APP_VERSION = "1.15.3";
+  const APP_VERSION = "1.15.4";
 
   // ---- Estado ------------------------------------------------------------
   const state = {
@@ -678,12 +678,12 @@
     const dows = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
     let cells = "";
-    for (let i = 0; i < startDow; i++) cells += `<span class="cal-cell empty"></span>`;
     for (let day = 1; day <= daysInMonth; day++) {
       const iso = `${y}-${String(m + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
       const done = !!byDate[iso];
       const cls = ["cal-cell", done ? "done" : "", iso === todayISO ? "today" : ""].join(" ").trim();
-      cells += `<button class="${cls}" data-date="${iso}" ${done ? "" : "disabled"}>${day}</button>`;
+      const style = day === 1 ? ` style="grid-column-start:${startDow + 1}"` : "";
+      cells += `<button class="${cls}"${style} data-date="${iso}" ${done ? "" : "disabled"}>${day}</button>`;
     }
 
     const total = sessions.length;
