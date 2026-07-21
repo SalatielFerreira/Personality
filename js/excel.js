@@ -37,32 +37,22 @@
   //  TREINO
   // ===================================================================
   const HEADER_MAP = {
-    semana: "week", week: "week",
-    dia: "day", treino: "day", day: "day",
-    exercicio: "exercise", exercise: "exercise",
+    tipo: "type", type: "type",
+    exercicio: "exercise", exercicios: "exercise", exercise: "exercise",
     serie: "sets", series: "sets", sets: "sets",
-    repeticoes: "reps", repeticao: "reps", rep: "reps", reps: "reps",
+    repeticoes: "reps", repeticao: "reps", rep: "reps", reps: "reps", repeticao: "reps",
     descanso: "rest", rest: "rest",
-    observacao: "obs", obs: "obs", observacoes: "obs"
+    observacao: "obs", observacoes: "obs", obs: "obs"
   };
 
-  // Dias da semana: forma canônica p/ exibir + ordem cronológica.
-  const DAY_CANON = {
-    domingo: "Domingo", segunda: "Segunda", terca: "Terça", quarta: "Quarta",
-    quinta: "Quinta", sexta: "Sexta", sabado: "Sábado"
-  };
-  const DAY_ORDER = { domingo: 0, segunda: 1, terca: 2, quarta: 3, quinta: 4, sexta: 5, sabado: 6 };
-  function canonDay(v) {
-    const n = normalizeKey(v);
-    return { name: DAY_CANON[n] || String(v || "").trim() || "—", order: n in DAY_ORDER ? DAY_ORDER[n] : 99 };
-  }
-
+  // Lê a aba de treino agrupando por "Tipo" (livre: A, B, Peito, Segunda...).
+  // Colunas: Tipo | Exercício | Séries | Repetições | Descanso | Observação.
   function parsePlanSheet(XLSX, sheet, fileName) {
     if (!sheet) return null;
     const aoa = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
     if (!aoa.length) return null;
 
-    // Encontra a linha de cabeçalho (mesmo que haja título "Nome do Treino" acima).
+    // Encontra a linha de cabeçalho (ignora um título acima, se houver).
     let headerIdx = -1;
     let col = null;
     for (let i = 0; i < aoa.length; i++) {
@@ -75,17 +65,16 @@
     }
     if (headerIdx < 0) return null;
 
-    const weeksMap = {};
+    const order = [];
+    const byType = {};
     let count = 0;
     for (let i = headerIdx + 1; i < aoa.length; i++) {
       const row = aoa[i] || [];
       const exercise = String(row[col.exercise] == null ? "" : row[col.exercise]).trim();
       if (!exercise) continue;
-      const week = parseInt(row[col.week], 10) || 1;
-      const d = canonDay(col.day != null ? row[col.day] : "");
-      weeksMap[week] = weeksMap[week] || {};
-      weeksMap[week][d.name] = weeksMap[week][d.name] || { order: d.order, exercises: [] };
-      weeksMap[week][d.name].exercises.push({
+      const type = (col.type != null ? String(row[col.type] == null ? "" : row[col.type]).trim() : "") || "Geral";
+      if (!(type in byType)) { byType[type] = []; order.push(type); }
+      byType[type].push({
         name: exercise,
         sets: parseInt(row[col.sets], 10) || 3,
         reps: String(col.reps != null ? row[col.reps] : "").trim() || "10",
@@ -96,18 +85,8 @@
     }
     if (count === 0) return null;
 
-    const weeks = Object.keys(weeksMap)
-      .map(Number)
-      .sort((a, b) => a - b)
-      .map((weekNum) => {
-        const days = Object.keys(weeksMap[weekNum])
-          .map((name) => ({ day: name, order: weeksMap[weekNum][name].order, exercises: weeksMap[weekNum][name].exercises }))
-          .sort((a, b) => a.order - b.order || a.day.localeCompare(b.day))
-          .map((d) => ({ day: d.day, exercises: d.exercises }));
-        return { week: weekNum, days };
-      });
-
-    return { fileName: fileName || "", totalExercises: count, totalWeeks: weeks.length, weeks };
+    const types = order.map((name) => ({ name, exercises: byType[name] }));
+    return { fileName: fileName || "", totalExercises: count, totalTypes: types.length, types };
   }
 
   // ===================================================================
@@ -124,7 +103,7 @@
       fields: [
         { key: "nome", label: "Nome" },
         { key: "idade", label: "Idade", unit: "anos" },
-        { key: "altura", label: "Altura", unit: "cm" },
+        { key: "altura", label: "Altura", unit: "m" },
         { key: "peso", label: "Peso", unit: "kg" },
         { key: "sexo", label: "Sexo" },
         { key: "nascimento", label: "Data de nascimento" },
@@ -161,7 +140,7 @@
     },
     {
       title: "Hábitos de vida",
-      type: "simnao",
+      type: "texto",
       fields: [
         { key: "freq_ativ", label: "Frequência de atividade física" },
         { key: "modalidade", label: "Modalidade praticada" },
@@ -282,34 +261,7 @@
   // ===================================================================
   //  MODELO (um único arquivo com todas as abas)
   // ===================================================================
-  async function downloadTemplate() {
-    const XLSX = await loadXLSX();
-    const wb = XLSX.utils.book_new();
-
-    // --- Aba Treino (Semana do mês 1-4 · Dia da semana) ---
-    const DIAS = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
-    const treinoAoa = [
-      ["MODELO DE TREINO — Semana = semana do mês (1 a 4) · Dia = dia da semana"],
-      ["Semana", "Dia", "Exercício", "Séries", "Repetições", "Descanso", "Observação"]
-    ];
-    for (let s = 1; s <= 4; s++) {
-      DIAS.forEach((dia) => {
-        if (s === 1 && dia === "Domingo") {
-          treinoAoa.push([1, "Domingo", "Cadeira Extensora", 4, "10-12", 65, ""]);
-          treinoAoa.push([1, "Domingo", "Cadeira Flexora", 4, "10-15", 45, ""]);
-          treinoAoa.push([1, "Domingo", "Agachamento", 4, "12-15", 30, ""]);
-        } else if (s === 1 && dia === "Segunda") {
-          treinoAoa.push([1, "Segunda", "Rosca Direta", 3, "20", 20, ""]);
-        } else {
-          treinoAoa.push([s, dia, "", "", "", "", ""]);
-        }
-      });
-    }
-    const wsTreino = XLSX.utils.aoa_to_sheet(treinoAoa);
-    wsTreino["!cols"] = [{ wch: 8 }, { wch: 10 }, { wch: 24 }, { wch: 8 }, { wch: 12 }, { wch: 10 }, { wch: 28 }];
-    XLSX.utils.book_append_sheet(wb, wsTreino, "Treino");
-
-    // --- Aba Ficha do Aluno ---
+  function buildFichaAoa() {
     const aoa = [
       ["FICHA DO ALUNO — ELTECH Personality"],
       ["Preencha as colunas em branco. Campos vazios não aparecem no app."],
@@ -323,44 +275,81 @@
       } else if (s.type === "simnao") {
         aoa.push(["Campo", "Valor (SIM/NÃO)", "Descrição"]);
         s.fields.forEach((f) => aoa.push([f.label, "", ""]));
+      } else if (s.type === "texto") {
+        aoa.push(["Campo", "Descrição"]);
+        s.fields.forEach((f) => aoa.push([f.label, ""]));
       } else if (s.subsections) {
         s.subsections.forEach((sub) => {
           aoa.push([sub.subtitle]);
-          aoa.push(["Campo", "Valor", "Unidade"]);
+          aoa.push(["Campo", "Dados", "Unidade"]);
           sub.fields.forEach((f) => aoa.push([f.label, "", sub.unit || ""]));
         });
       } else {
-        aoa.push(["Campo", "Valor", "Unidade"]);
+        aoa.push(["Campo", "Dados", "Unidade"]);
         s.fields.forEach((f) => aoa.push([f.label, "", f.unit || ""]));
       }
       aoa.push([]);
     });
-    const wsFicha = XLSX.utils.aoa_to_sheet(aoa);
-    wsFicha["!cols"] = [{ wch: 34 }, { wch: 18 }, { wch: 30 }];
-    XLSX.utils.book_append_sheet(wb, wsFicha, "Ficha do Aluno");
+    return aoa;
+  }
 
-    // --- Aba Instruções ---
-    const guide = [
+  function buildTreinoAoa() {
+    return [
+      ["TREINO DO ALUNO — ELTECH Personality"],
+      [],
+      ["Tipo", "Exercício", "Séries", "Repetições", "Descanso", "Observação"],
+      ["A", "Agachamento", 4, "10-12", 60, ""],
+      ["A", "Cadeira Extensora", 4, "10", 60, ""],
+      ["A", "Cadeira Flexora", 4, "10", 60, ""],
+      ["B", "Rosca Direta", 3, "12", 60, ""],
+      ["B", "Rosca Alternada", 3, "12", 60, ""],
+      ["C", "Supino Inclinado", 4, "15", 60, ""],
+      ["C", "Crossover", 4, "15", 60, ""]
+    ];
+  }
+
+  function buildGuideAoa() {
+    return [
       ["COMO PREENCHER — ELTECH Personality"],
       [""],
-      ["Este único arquivo alimenta o app do aluno. Preencha as duas abas:"],
-      [""],
-      ["ABA 'TREINO'"],
-      ["• Uma linha por série de exercício."],
-      ["• Colunas: Semana | Dia (A, B, C...) | Exercício | Séries | Repetições | Descanso | Observação."],
-      ["• Pode repetir o mesmo exercício em semanas diferentes para progredir a carga."],
+      ["Este único arquivo alimenta o app do aluno. Preencha as abas 'Ficha do Aluno' e 'Treino'."],
       [""],
       ["ABA 'FICHA DO ALUNO'"],
       ["• Não altere os nomes dos campos (coluna da esquerda)."],
       ["• Campos deixados em branco NÃO aparecem no app."],
       ["• OBJETIVOS: escreva X (ou Sim) nos objetivos desejados."],
-      ["• HISTÓRICO DE SAÚDE e HÁBITOS DE VIDA: escreva SIM ou NÃO na coluna Valor e detalhe na Descrição."],
-      ["• CIRCUNFERÊNCIAS em centímetros (cm); DOBRAS CUTÂNEAS em milímetros (mm)."],
+      ["• HISTÓRICO DE SAÚDE: escreva SIM ou NÃO e detalhe na coluna Descrição."],
+      ["• HÁBITOS DE VIDA: escreva a informação na coluna Descrição."],
+      ["• Altura em metros (m); circunferências em cm; dobras cutâneas em mm."],
       ["• Datas no formato dd/mm/aaaa."],
       [""],
-      ["Depois é só salvar o arquivo e importar em: Perfil > Área do Professor > Importar dados."]
+      ["ABA 'TREINO'"],
+      ["• Colunas: Tipo | Exercício | Séries | Repetições | Descanso | Observação."],
+      ["• TIPO é livre: use o que quiser (A, B, C, Peito, Perna, Segunda...)."],
+      ["• Uma linha por exercício, agrupados pelo Tipo."],
+      ["• Repetições pode ser um número (10) ou uma faixa (10-12). Descanso em segundos."],
+      ["• Observação: recado opcional para o aluno naquele exercício."],
+      [""],
+      ["Depois é só enviar o arquivo ao aluno. Ele importa em: Perfil > Área do Professor > Importar dados."]
     ];
-    const wsGuide = XLSX.utils.aoa_to_sheet(guide);
+  }
+
+  async function downloadTemplate() {
+    const XLSX = await loadXLSX();
+    const wb = XLSX.utils.book_new();
+
+    // 1) Ficha do Aluno
+    const wsFicha = XLSX.utils.aoa_to_sheet(buildFichaAoa());
+    wsFicha["!cols"] = [{ wch: 34 }, { wch: 20 }, { wch: 30 }];
+    XLSX.utils.book_append_sheet(wb, wsFicha, "Ficha do Aluno");
+
+    // 2) Treino (por Tipo)
+    const wsTreino = XLSX.utils.aoa_to_sheet(buildTreinoAoa());
+    wsTreino["!cols"] = [{ wch: 10 }, { wch: 26 }, { wch: 8 }, { wch: 12 }, { wch: 10 }, { wch: 30 }];
+    XLSX.utils.book_append_sheet(wb, wsTreino, "Treino");
+
+    // 3) Instruções
+    const wsGuide = XLSX.utils.aoa_to_sheet(buildGuideAoa());
     wsGuide["!cols"] = [{ wch: 95 }];
     XLSX.utils.book_append_sheet(wb, wsGuide, "Instruções");
 

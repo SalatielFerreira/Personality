@@ -5,7 +5,7 @@
   "use strict";
 
   // Versão do app — manter igual em version.json e sw.js (CACHE_VERSION).
-  const APP_VERSION = "1.11.0";
+  const APP_VERSION = "1.12.0";
 
   // ---- Estado ------------------------------------------------------------
   const state = {
@@ -829,7 +829,7 @@
     const planSummary = state.plan
       ? `<div class="card">
           <div class="row between"><h3>Treino atual</h3><span class="pill primary">${state.plan.totalExercises} exercícios</span></div>
-          <p class="muted small">${state.plan.totalWeeks} semana(s) · importado em ${new Date(state.plan.importedAt).toLocaleDateString("pt-BR")}</p>
+          <p class="muted small">${state.plan.totalTypes || (state.plan.types ? state.plan.types.length : 0)} tipo(s) · importado em ${new Date(state.plan.importedAt).toLocaleDateString("pt-BR")}</p>
           <button class="btn danger sm" id="remove-plan" style="margin-top:10px">Remover treino</button>
         </div>`
       : `<div class="card muted">Nenhum treino importado ainda.</div>`;

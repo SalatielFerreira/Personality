@@ -1,7 +1,7 @@
 /* Gera o modelo Excel do ELTECH Personality na raiz do projeto.
+ * Ordem das abas: 1) Ficha do Aluno  2) Treino (por Tipo)  3) Instruções.
  * Mantém a MESMA estrutura lida pelo app (js/excel.js).
  * Uso:  npm run modelo    (ou: node tools/gerar-modelo.mjs)
- * Ao mudar a ficha/treino em js/excel.js, atualize também este arquivo e rode de novo.
  */
 import * as XLSX from "xlsx";
 import { fileURLToPath } from "url";
@@ -11,7 +11,7 @@ const STUDENT_SCHEMA = [
   {
     title: "Dados pessoais",
     fields: [
-      { label: "Nome" }, { label: "Idade", unit: "anos" }, { label: "Altura", unit: "cm" },
+      { label: "Nome" }, { label: "Idade", unit: "anos" }, { label: "Altura", unit: "m" },
       { label: "Peso", unit: "kg" }, { label: "Sexo" }, { label: "Data de nascimento" },
       { label: "Telefone" }, { label: "E-mail" }, { label: "Profissão" }, { label: "Contato de emergência" }
     ]
@@ -32,7 +32,7 @@ const STUDENT_SCHEMA = [
     ]
   },
   {
-    title: "Hábitos de vida", type: "simnao",
+    title: "Hábitos de vida", type: "texto",
     fields: [
       { label: "Frequência de atividade física" }, { label: "Modalidade praticada" },
       { label: "Tempo de prática" }, { label: "Horas de sono" }, { label: "Qualidade do sono" },
@@ -74,79 +74,79 @@ const STUDENT_SCHEMA = [
 
 const wb = XLSX.utils.book_new();
 
-// --- Aba Treino (Semana do mês 1-4 · Dia da semana) ---
-const DIAS = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
-const treinoAoa = [
-  ["MODELO DE TREINO — Semana = semana do mês (1 a 4) · Dia = dia da semana"],
-  ["Semana", "Dia", "Exercício", "Séries", "Repetições", "Descanso", "Observação"]
-];
-for (let s = 1; s <= 4; s++) {
-  DIAS.forEach((dia) => {
-    if (s === 1 && dia === "Domingo") {
-      treinoAoa.push([1, "Domingo", "Cadeira Extensora", 4, "10-12", 65, ""]);
-      treinoAoa.push([1, "Domingo", "Cadeira Flexora", 4, "10-15", 45, ""]);
-      treinoAoa.push([1, "Domingo", "Agachamento", 4, "12-15", 30, ""]);
-    } else if (s === 1 && dia === "Segunda") {
-      treinoAoa.push([1, "Segunda", "Rosca Direta", 3, "20", 20, ""]);
-    } else {
-      treinoAoa.push([s, dia, "", "", "", "", ""]);
-    }
-  });
-}
-const wsTreino = XLSX.utils.aoa_to_sheet(treinoAoa);
-wsTreino["!cols"] = [{ wch: 8 }, { wch: 10 }, { wch: 24 }, { wch: 8 }, { wch: 12 }, { wch: 10 }, { wch: 28 }];
-XLSX.utils.book_append_sheet(wb, wsTreino, "Treino");
-
-// --- Aba Ficha do Aluno ---
-const aoa = [
+// 1) Ficha do Aluno
+const fichaAoa = [
   ["FICHA DO ALUNO — ELTECH Personality"],
   ["Preencha as colunas em branco. Campos vazios não aparecem no app."],
   []
 ];
 STUDENT_SCHEMA.forEach((s) => {
-  aoa.push([s.title.toUpperCase()]);
+  fichaAoa.push([s.title.toUpperCase()]);
   if (s.type === "objetivos") {
-    aoa.push(["Objetivo", "Marcar (X)"]);
-    s.fields.forEach((f) => aoa.push([f.label, ""]));
+    fichaAoa.push(["Objetivo", "Marcar (X)"]);
+    s.fields.forEach((f) => fichaAoa.push([f.label, ""]));
   } else if (s.type === "simnao") {
-    aoa.push(["Campo", "Valor (SIM/NÃO)", "Descrição"]);
-    s.fields.forEach((f) => aoa.push([f.label, "", ""]));
+    fichaAoa.push(["Campo", "Valor (SIM/NÃO)", "Descrição"]);
+    s.fields.forEach((f) => fichaAoa.push([f.label, "", ""]));
+  } else if (s.type === "texto") {
+    fichaAoa.push(["Campo", "Descrição"]);
+    s.fields.forEach((f) => fichaAoa.push([f.label, ""]));
   } else if (s.subsections) {
     s.subsections.forEach((sub) => {
-      aoa.push([sub.subtitle]);
-      aoa.push(["Campo", "Valor", "Unidade"]);
-      sub.fields.forEach((f) => aoa.push([f.label, "", sub.unit || ""]));
+      fichaAoa.push([sub.subtitle]);
+      fichaAoa.push(["Campo", "Dados", "Unidade"]);
+      sub.fields.forEach((f) => fichaAoa.push([f.label, "", sub.unit || ""]));
     });
   } else {
-    aoa.push(["Campo", "Valor", "Unidade"]);
-    s.fields.forEach((f) => aoa.push([f.label, "", f.unit || ""]));
+    fichaAoa.push(["Campo", "Dados", "Unidade"]);
+    s.fields.forEach((f) => fichaAoa.push([f.label, "", f.unit || ""]));
   }
-  aoa.push([]);
+  fichaAoa.push([]);
 });
-const wsFicha = XLSX.utils.aoa_to_sheet(aoa);
-wsFicha["!cols"] = [{ wch: 34 }, { wch: 18 }, { wch: 30 }];
+const wsFicha = XLSX.utils.aoa_to_sheet(fichaAoa);
+wsFicha["!cols"] = [{ wch: 34 }, { wch: 20 }, { wch: 30 }];
 XLSX.utils.book_append_sheet(wb, wsFicha, "Ficha do Aluno");
 
-// --- Aba Instruções ---
+// 2) Treino (por Tipo livre)
+const treinoAoa = [
+  ["TREINO DO ALUNO — ELTECH Personality"],
+  [],
+  ["Tipo", "Exercício", "Séries", "Repetições", "Descanso", "Observação"],
+  ["A", "Agachamento", 4, "10-12", 60, ""],
+  ["A", "Cadeira Extensora", 4, "10", 60, ""],
+  ["A", "Cadeira Flexora", 4, "10", 60, ""],
+  ["B", "Rosca Direta", 3, "12", 60, ""],
+  ["B", "Rosca Alternada", 3, "12", 60, ""],
+  ["C", "Supino Inclinado", 4, "15", 60, ""],
+  ["C", "Crossover", 4, "15", 60, ""]
+];
+const wsTreino = XLSX.utils.aoa_to_sheet(treinoAoa);
+wsTreino["!cols"] = [{ wch: 10 }, { wch: 26 }, { wch: 8 }, { wch: 12 }, { wch: 10 }, { wch: 30 }];
+XLSX.utils.book_append_sheet(wb, wsTreino, "Treino");
+
+// 3) Instruções
 const guide = [
   ["COMO PREENCHER — ELTECH Personality"],
   [""],
-  ["Este único arquivo alimenta o app do aluno. Preencha as duas abas:"],
-  [""],
-  ["ABA 'TREINO'"],
-  ["• Uma linha por série de exercício."],
-  ["• Colunas: Semana | Dia (A, B, C...) | Exercício | Séries | Repetições | Descanso | Observação."],
-  ["• Pode repetir o mesmo exercício em semanas diferentes para progredir a carga."],
+  ["Este único arquivo alimenta o app do aluno. Preencha as abas 'Ficha do Aluno' e 'Treino'."],
   [""],
   ["ABA 'FICHA DO ALUNO'"],
   ["• Não altere os nomes dos campos (coluna da esquerda)."],
   ["• Campos deixados em branco NÃO aparecem no app."],
   ["• OBJETIVOS: escreva X (ou Sim) nos objetivos desejados."],
-  ["• HISTÓRICO DE SAÚDE e HÁBITOS DE VIDA: escreva SIM ou NÃO na coluna Valor e detalhe na Descrição."],
-  ["• CIRCUNFERÊNCIAS em centímetros (cm); DOBRAS CUTÂNEAS em milímetros (mm)."],
+  ["• HISTÓRICO DE SAÚDE: escreva SIM ou NÃO e detalhe na coluna Descrição."],
+  ["• HÁBITOS DE VIDA: escreva a informação na coluna Descrição."],
+  ["• Altura em metros (m); circunferências em cm; dobras cutâneas em mm."],
   ["• Datas no formato dd/mm/aaaa."],
   [""],
-  ["Depois é só enviar este arquivo ao aluno. Ele importa em: Perfil > Área do Professor > Importar dados."]
+  ["ABA 'TREINO'"],
+  ["• Colunas: Tipo | Exercício | Séries | Repetições | Descanso | Observação."],
+  ["• TIPO é livre: use o que quiser (A, B, C, Peito, Perna, Segunda...)."],
+  ["• Uma linha por exercício, agrupados pelo Tipo."],
+  ["• Repetições pode ser um número (10) ou uma faixa (10-12). Descanso em segundos."],
+  ["• Observação: recado opcional para o aluno naquele exercício."],
+  [""],
+  ["Depois é só enviar o arquivo ao aluno. Ele importa em: Perfil > Área do Professor > Importar dados."]
 ];
 const wsGuide = XLSX.utils.aoa_to_sheet(guide);
 wsGuide["!cols"] = [{ wch: 95 }];

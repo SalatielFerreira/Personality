@@ -5,6 +5,16 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.12.0] — 2026-07-21
+
+### Excel: ficha primeiro e treino por "Tipo"
+- O modelo passa a ter a **Ficha do Aluno como 1ª aba**, depois **Treino** e **Instruções**.
+- **Treino** agora é por **Tipo livre** (A, B, C, Peito, Perna...): colunas
+  **Tipo · Exercício · Séries · Repetições (ex.: 10-12) · Descanso (seg) · Observação**.
+- Ficha alinhada ao arquivo do personal: coluna **Dados**, **Hábitos de vida** como
+  Campo/Descrição e **altura em metros**.
+- Leitor do app atualizado para esse formato (agrupa exercícios por Tipo).
+
 ## [1.11.0] — 2026-07-21
 
 ### Simplificação temporária
