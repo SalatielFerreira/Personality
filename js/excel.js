@@ -66,15 +66,35 @@
     if (headerIdx < 0) return null;
 
     const order = [];
-    const byType = {};
+    const byKey = {};
+    const titleByKey = {};
     let count = 0;
+    let pendingTitle = null;
+    const isPlaceholder = (s) => normalizeKey(s).includes("titulo do treino");
+
     for (let i = headerIdx + 1; i < aoa.length; i++) {
       const row = aoa[i] || [];
+      const tipo = col.type != null ? String(row[col.type] == null ? "" : row[col.type]).trim() : "";
       const exercise = String(row[col.exercise] == null ? "" : row[col.exercise]).trim();
-      if (!exercise) continue;
-      const type = (col.type != null ? String(row[col.type] == null ? "" : row[col.type]).trim() : "") || "Geral";
-      if (!(type in byType)) { byType[type] = []; order.push(type); }
-      byType[type].push({
+
+      // Linha de título do treino (Tipo = "-"): define o nome do próximo grupo.
+      if (tipo === "-" || tipo === "—") {
+        pendingTitle = exercise && !isPlaceholder(exercise) ? exercise : null;
+        continue;
+      }
+      if (!exercise || isPlaceholder(exercise)) continue;
+
+      const key = tipo || "Geral";
+      if (!(key in byKey)) {
+        byKey[key] = [];
+        order.push(key);
+        titleByKey[key] = pendingTitle;
+        pendingTitle = null;
+      } else if (pendingTitle && !titleByKey[key]) {
+        titleByKey[key] = pendingTitle;
+        pendingTitle = null;
+      }
+      byKey[key].push({
         name: exercise,
         sets: parseInt(row[col.sets], 10) || 3,
         reps: String(col.reps != null ? row[col.reps] : "").trim() || "10",
@@ -85,7 +105,7 @@
     }
     if (count === 0) return null;
 
-    const types = order.map((name) => ({ name, exercises: byType[name] }));
+    const types = order.map((key) => ({ name: titleByKey[key] || ("Treino " + key), exercises: byKey[key] }));
     return { fileName: fileName || "", totalExercises: count, totalTypes: types.length, types };
   }
 
@@ -294,15 +314,19 @@
   }
 
   function buildTreinoAoa() {
+    const T = () => ["-", "TÍTULO DO TREINO (MUDAR NOME)", "-", "-", "-", "-"];
     return [
       ["TREINO DO ALUNO — ELTECH Personality"],
       [],
       ["Tipo", "Exercício", "Séries", "Repetições", "Descanso", "Observação"],
-      ["A", "Agachamento", 4, "10-12", 60, ""],
-      ["A", "Cadeira Extensora", 4, "10", 60, ""],
-      ["A", "Cadeira Flexora", 4, "10", 60, ""],
+      T(),
+      ["A", "Agachamento", 4, "10 - 12", 60, ""],
+      ["A", "Cadeira Extensora", 4, "10 - 12", 60, ""],
+      ["A", "Cadeira Flexora", 4, "10 - 12", 60, ""],
+      T(),
       ["B", "Rosca Direta", 3, "12", 60, ""],
       ["B", "Rosca Alternada", 3, "12", 60, ""],
+      T(),
       ["C", "Supino Inclinado", 4, "15", 60, ""],
       ["C", "Crossover", 4, "15", 60, ""]
     ];

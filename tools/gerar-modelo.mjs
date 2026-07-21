@@ -108,15 +108,19 @@ wsFicha["!cols"] = [{ wch: 34 }, { wch: 20 }, { wch: 30 }];
 XLSX.utils.book_append_sheet(wb, wsFicha, "Ficha do Aluno");
 
 // 2) Treino (por Tipo livre)
+const T = () => ["-", "TÍTULO DO TREINO (MUDAR NOME)", "-", "-", "-", "-"];
 const treinoAoa = [
   ["TREINO DO ALUNO — ELTECH Personality"],
   [],
   ["Tipo", "Exercício", "Séries", "Repetições", "Descanso", "Observação"],
-  ["A", "Agachamento", 4, "10-12", 60, ""],
-  ["A", "Cadeira Extensora", 4, "10", 60, ""],
-  ["A", "Cadeira Flexora", 4, "10", 60, ""],
+  T(),
+  ["A", "Agachamento", 4, "10 - 12", 60, ""],
+  ["A", "Cadeira Extensora", 4, "10 - 12", 60, ""],
+  ["A", "Cadeira Flexora", 4, "10 - 12", 60, ""],
+  T(),
   ["B", "Rosca Direta", 3, "12", 60, ""],
   ["B", "Rosca Alternada", 3, "12", 60, ""],
+  T(),
   ["C", "Supino Inclinado", 4, "15", 60, ""],
   ["C", "Crossover", 4, "15", 60, ""]
 ];

@@ -5,7 +5,7 @@
   "use strict";
 
   // Versão do app — manter igual em version.json e sw.js (CACHE_VERSION).
-  const APP_VERSION = "1.12.0";
+  const APP_VERSION = "1.13.0";
 
   // ---- Estado ------------------------------------------------------------
   const state = {
@@ -342,82 +342,80 @@
     startHomeClock();
   };
 
-  // ---- Treinos (vazia por enquanto) -------------------------------------
+  // ---- Treinos (um card por treino/tipo) --------------------------------
   VIEWS.treinos = async function () {
-    renderScreen(
-      `<h1>Treinos</h1>${emptyState("🏋️", "Em breve", "Esta área estará disponível em breve.")}`,
-      { active: "treinos" }
+    await loadPlan();
+    const types = (state.plan && state.plan.types) || [];
+    if (!types.length) {
+      renderScreen(
+        `<h1>Treinos</h1>${emptyState("🏋️", "Sem treino ainda", "Seu personal ainda não importou o treino. Ele envia a planilha e você importa em Perfil → Área do Professor.")}`,
+        { active: "treinos" }
+      );
+      return;
+    }
+    const cards = types
+      .map(
+        (tp, i) => `
+        <div class="card tap prof-card" data-i="${i}">
+          <div>
+            <h3>${esc(tp.name)}</h3>
+            <div class="muted small">${tp.exercises.length} exercícios</div>
+          </div>
+          <span class="chev">›</span>
+        </div>`
+      )
+      .join("");
+    renderScreen(`<h1>Treinos</h1>${cards}`, { active: "treinos" });
+    qsa(".card[data-i]").forEach((c) =>
+      c.addEventListener("click", () => navigate("workout/" + c.dataset.i))
     );
   };
 
   // ---- Execução do treino -----------------------------------------------
   VIEWS.workout = async function (params) {
     await loadPlan();
-    const weekNum = parseInt(params[0], 10);
-    const dayKey = params[1];
-    const week = state.plan && state.plan.weeks.find((w) => w.week === weekNum);
-    const day = week && week.days.find((d) => d.day === dayKey);
-    if (!day) return navigate("treinos");
-
-    state.currentWeek = weekNum;
+    const idx = parseInt(params[0], 10);
+    const tp = state.plan && state.plan.types && state.plan.types[idx];
+    if (!tp) return navigate("treinos");
     await loadLogs();
 
-    const exCards = day.exercises
-      .map((ex, exi) => renderExercise(weekNum, dayKey, ex, exi))
+    const exCards = tp.exercises
+      .map((ex) => {
+        const w = getWeight(tp.name, ex.name);
+        return `
+        <div class="card ex-card">
+          <div class="ex-head">
+            <div>
+              <h3>${esc(ex.name)}</h3>
+              <div class="ex-meta">
+                <span class="pill">${ex.sets} × ${esc(ex.reps)}</span>
+                <span class="pill info">⏱ ${ex.rest}s</span>
+              </div>
+            </div>
+            <div class="weight-box">
+              <label>Peso (kg)</label>
+              <input class="w-input" type="number" inputmode="decimal" data-ex="${esc(ex.name)}" value="${w == null ? "" : w}" placeholder="0" />
+            </div>
+          </div>
+          ${ex.obs ? `<p class="ex-obs">📝 ${esc(ex.obs)}</p>` : ""}
+        </div>`;
+      })
       .join("");
 
     renderScreen(
       `
       <div class="top-header">
-        <button class="btn-link" id="back">← Treinos</button>
-        <span class="pill primary">Semana ${weekNum} · ${esc(dayKey)}</span>
+        <button class="btn sm back-green" id="back">← Treinos</button>
       </div>
-      <div class="progress" style="margin-bottom:4px"><span id="w-progress" style="width:${dayProgress(weekNum, day)}%"></span></div>
-      <p class="muted small" id="w-progress-label">${dayProgress(weekNum, day)}% concluído</p>
-
-      <div class="card" id="timer-card">
-        <div class="timer-wrap">
-          <div class="muted small">Descanso</div>
-          <div class="timer-time" id="timer-display">00:00</div>
-          <div class="timer-presets">
-            <button class="btn secondary sm" data-sec="45">45s</button>
-            <button class="btn secondary sm" data-sec="60">60s</button>
-            <button class="btn secondary sm" data-sec="90">90s</button>
-            <button class="btn secondary sm" data-sec="120">120s</button>
-          </div>
-          <div class="row"><button class="btn secondary sm" id="timer-stop">Parar</button></div>
-        </div>
-      </div>
-
-      ${exCards}
-
-      <button class="btn" id="finish" style="margin-top:8px">✔ Finalizar treino</button>`,
-      { nav: false, help: "workout" }
+      <h1>${esc(tp.name)}</h1>
+      ${exCards}`,
+      { nav: true, active: "treinos", help: "workout" }
     );
 
     qs("#back").addEventListener("click", () => navigate("treinos"));
-
-    // Timer
-    qsa("#timer-card [data-sec]").forEach((b) =>
-      b.addEventListener("click", () => startTimer(parseInt(b.dataset.sec, 10)))
+    qsa(".w-input").forEach((inp) =>
+      inp.addEventListener("change", () => saveWeight(tp.name, inp.dataset.ex, inp.value))
     );
-    qs("#timer-stop").addEventListener("click", stopTimer);
-
-    // Steppers + checks (delegação)
-    qsa(".ex-card").forEach((card) => bindExerciseCard(card, weekNum, dayKey, day));
-
-    qs("#finish").addEventListener("click", () => {
-      stopTimer();
-      const prog = dayProgress(weekNum, day);
-      confirmModal(
-        "Finalizar treino?",
-        prog < 100
-          ? `Você concluiu ${prog}% das séries. Deseja finalizar mesmo assim?`
-          : "Parabéns! Você concluiu todas as séries.",
-        () => { toast("Treino salvo! 💪", "success"); navigate("treinos"); },
-        "Finalizar"
-      );
-    });
   };
 
   function renderExercise(weekNum, dayKey, ex, exi) {
@@ -966,6 +964,21 @@
     state.logs = {};
     all.forEach((l) => (state.logs[l.id] = l));
   }
+
+  // Peso por exercício (um valor por exercício de cada treino).
+  function weightId(type, ex) { return `${state.user.email}|w|${type}|${ex}`; }
+  function getWeight(type, ex) {
+    const l = state.logs[weightId(type, ex)];
+    return l && l.weight != null ? l.weight : null;
+  }
+  async function saveWeight(type, ex, val) {
+    const id = weightId(type, ex);
+    const weight = val === "" ? null : parseFloat(val);
+    const log = { id, owner: state.user.email, type, exercise: ex, weight, updatedAt: new Date().toISOString() };
+    state.logs[id] = log;
+    await DB.put("logs", log);
+    toast("Peso salvo", "success");
+  }
   function getLog(week, day, exi, set) {
     return state.logs[logId(week, day, exi, set)];
   }
@@ -1091,7 +1104,18 @@
     },
     treinos: {
       title: "Treinos",
-      items: [["🚧", "Esta área estará disponível em breve."]]
+      items: [
+        ["🏋️", "Cada card é um treino montado pelo seu personal. Toque para abrir."],
+        ["📋", "A quantidade de treinos depende do que o personal definiu na planilha."]
+      ]
+    },
+    workout: {
+      title: "Treino",
+      items: [
+        ["🏋️", "Cada card é um exercício, com séries, repetições e descanso."],
+        ["⚖️", "Digite no campo <b>Peso</b> (ao lado) a carga que você usou."],
+        ["📝", "As observações do personal aparecem abaixo do exercício."]
+      ]
     },
     evolucao: {
       title: "Evolução",

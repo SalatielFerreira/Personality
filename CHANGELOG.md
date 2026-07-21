@@ -5,6 +5,15 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.13.0] — 2026-07-21
+
+### Treinos reativado (por treino/título)
+- A página **Treinos** cria **um card por treino** definido na planilha (a linha de título
+  "TÍTULO DO TREINO (MUDAR NOME)" define o nome; se não renomear, vira "Treino A/B/C...").
+- Ao abrir um treino: cada exercício mostra **séries × repetições** e **descanso**, com um
+  **campo de peso ao lado** para o aluno preencher e as **observações abaixo**.
+- O peso é salvo por exercício no aparelho (aparece preenchido na próxima vez).
+
 ## [1.12.0] — 2026-07-21
 
 ### Excel: ficha primeiro e treino por "Tipo"
