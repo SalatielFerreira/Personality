@@ -5,6 +5,11 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.15.3] — 2026-07-21
+
+### Ajuste
+- "Treino atual" (Área do Professor) mostra apenas a data de importação, igual à "Ficha atual".
+
 ## [1.15.2] — 2026-07-21
 
 ### Correção do calendário no celular
