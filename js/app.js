@@ -5,7 +5,7 @@
   "use strict";
 
   // Versão do app — manter igual em version.json e sw.js (CACHE_VERSION).
-  const APP_VERSION = "1.13.0";
+  const APP_VERSION = "1.14.0";
 
   // ---- Estado ------------------------------------------------------------
   const state = {
@@ -391,6 +391,7 @@
                 <span class="pill">${ex.sets} × ${esc(ex.reps)}</span>
                 <span class="pill info">⏱ ${ex.rest}s</span>
               </div>
+              ${ex.video ? `<button class="btn secondary xs play-btn" data-video="${esc(ex.video)}" data-title="${esc(ex.name)}">▶ Ver vídeo</button>` : ""}
             </div>
             <div class="weight-box">
               <label>Peso (kg)</label>
@@ -416,7 +417,27 @@
     qsa(".w-input").forEach((inp) =>
       inp.addEventListener("change", () => saveWeight(tp.name, inp.dataset.ex, inp.value))
     );
+    qsa(".play-btn").forEach((b) =>
+      b.addEventListener("click", () => openVideo(b.dataset.video, b.dataset.title))
+    );
   };
+
+  // Vídeo do exercício (YouTube) — abre embutido num modal.
+  function ytId(url) {
+    const m = String(url || "").match(
+      /(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/|v\/))([A-Za-z0-9_-]{6,})/
+    );
+    return m ? m[1] : null;
+  }
+  function openVideo(url, title) {
+    const id = ytId(url);
+    if (!id) { window.open(url, "_blank", "noopener"); return; }
+    modal(`
+      <h2 style="margin-bottom:12px">${esc(title || "Vídeo")}</h2>
+      <div class="video-wrap"><iframe src="https://www.youtube.com/embed/${id}" title="${esc(title || "")}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>
+      <button class="btn" style="margin-top:14px" id="vid-ok">Fechar</button>`);
+    qs("#vid-ok").addEventListener("click", closeModal);
+  }
 
   function renderExercise(weekNum, dayKey, ex, exi) {
     let sets = "";
@@ -1114,6 +1135,7 @@
       items: [
         ["🏋️", "Cada card é um exercício, com séries, repetições e descanso."],
         ["⚖️", "Digite no campo <b>Peso</b> (ao lado) a carga que você usou."],
+        ["▶️", "Se o personal anexou um vídeo, toque em <b>Ver vídeo</b> (precisa de internet)."],
         ["📝", "As observações do personal aparecem abaixo do exercício."]
       ]
     },

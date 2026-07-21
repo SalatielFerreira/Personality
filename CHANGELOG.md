@@ -5,6 +5,14 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.14.0] — 2026-07-21
+
+### Vídeo do exercício (YouTube)
+- Nova coluna **Vídeo** na planilha de treino: o personal cola o link do YouTube por exercício.
+- No app, cada exercício com vídeo mostra o botão **▶ Ver vídeo**, que abre o vídeo
+  embutido (precisa de internet). Sem link, o botão não aparece.
+- Modelo na raiz regenerado com a coluna Vídeo.
+
 ## [1.13.0] — 2026-07-21
 
 ### Treinos reativado (por treino/título)

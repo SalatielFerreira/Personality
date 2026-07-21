@@ -42,7 +42,8 @@
     serie: "sets", series: "sets", sets: "sets",
     repeticoes: "reps", repeticao: "reps", rep: "reps", reps: "reps", repeticao: "reps",
     descanso: "rest", rest: "rest",
-    observacao: "obs", observacoes: "obs", obs: "obs"
+    observacao: "obs", observacoes: "obs", obs: "obs",
+    video: "video", videos: "video", link: "video"
   };
 
   // Lê a aba de treino agrupando por "Tipo" (livre: A, B, Peito, Segunda...).
@@ -99,7 +100,8 @@
         sets: parseInt(row[col.sets], 10) || 3,
         reps: String(col.reps != null ? row[col.reps] : "").trim() || "10",
         rest: parseInt(row[col.rest], 10) || 60,
-        obs: String(col.obs != null ? row[col.obs] : "").trim()
+        obs: String(col.obs != null ? row[col.obs] : "").trim(),
+        video: String(col.video != null ? row[col.video] : "").trim()
       });
       count++;
     }
@@ -314,21 +316,21 @@
   }
 
   function buildTreinoAoa() {
-    const T = () => ["-", "TÍTULO DO TREINO (MUDAR NOME)", "-", "-", "-", "-"];
+    const T = () => ["-", "TÍTULO DO TREINO (MUDAR NOME)", "-", "-", "-", "-", "-"];
     return [
       ["TREINO DO ALUNO — ELTECH Personality"],
       [],
-      ["Tipo", "Exercício", "Séries", "Repetições", "Descanso", "Observação"],
+      ["Tipo", "Exercício", "Séries", "Repetições", "Descanso", "Observação", "Vídeo"],
       T(),
-      ["A", "Agachamento", 4, "10 - 12", 60, ""],
-      ["A", "Cadeira Extensora", 4, "10 - 12", 60, ""],
-      ["A", "Cadeira Flexora", 4, "10 - 12", 60, ""],
+      ["A", "Agachamento", 4, "10 - 12", 60, "", ""],
+      ["A", "Cadeira Extensora", 4, "10 - 12", 60, "", ""],
+      ["A", "Cadeira Flexora", 4, "10 - 12", 60, "", ""],
       T(),
-      ["B", "Rosca Direta", 3, "12", 60, ""],
-      ["B", "Rosca Alternada", 3, "12", 60, ""],
+      ["B", "Rosca Direta", 3, "12", 60, "", ""],
+      ["B", "Rosca Alternada", 3, "12", 60, "", ""],
       T(),
-      ["C", "Supino Inclinado", 4, "15", 60, ""],
-      ["C", "Crossover", 4, "15", 60, ""]
+      ["C", "Supino Inclinado", 4, "15", 60, "", ""],
+      ["C", "Crossover", 4, "15", 60, "", ""]
     ];
   }
 
@@ -353,6 +355,7 @@
       ["• Uma linha por exercício, agrupados pelo Tipo."],
       ["• Repetições pode ser um número (10) ou uma faixa (10-12). Descanso em segundos."],
       ["• Observação: recado opcional para o aluno naquele exercício."],
+      ["• Vídeo: cole o link do YouTube do exercício (opcional; abre no app com internet)."],
       [""],
       ["Depois é só enviar o arquivo ao aluno. Ele importa em: Perfil > Área do Professor > Importar dados."]
     ];
@@ -369,7 +372,7 @@
 
     // 2) Treino (por Tipo)
     const wsTreino = XLSX.utils.aoa_to_sheet(buildTreinoAoa());
-    wsTreino["!cols"] = [{ wch: 10 }, { wch: 26 }, { wch: 8 }, { wch: 12 }, { wch: 10 }, { wch: 30 }];
+    wsTreino["!cols"] = [{ wch: 10 }, { wch: 26 }, { wch: 8 }, { wch: 12 }, { wch: 10 }, { wch: 30 }, { wch: 40 }];
     XLSX.utils.book_append_sheet(wb, wsTreino, "Treino");
 
     // 3) Instruções
