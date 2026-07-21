@@ -5,7 +5,7 @@
   "use strict";
 
   // Versão do app — manter igual em version.json e sw.js (CACHE_VERSION).
-  const APP_VERSION = "1.10.0";
+  const APP_VERSION = "1.11.0";
 
   // ---- Estado ------------------------------------------------------------
   const state = {
@@ -323,42 +323,11 @@
   VIEWS.login = async function () { renderAuth("login"); };
   VIEWS.register = async function () { renderAuth("register"); };
 
-  // ---- Home / Dashboard --------------------------------------------------
+  // ---- Home (somente data/hora + saudação + nome) -----------------------
   VIEWS.home = async function () {
-    await loadPlan();
     const first = state.user.name;
     const bsb = localNow();
     const greet = bsb.hour < 12 ? "Bom dia" : bsb.hour < 18 ? "Boa tarde" : "Boa noite";
-
-    let planCard;
-    if (!state.plan) {
-      planCard = `
-        <div class="card">
-          <h3>Nenhum treino ainda</h3>
-          <p class="muted">Peça ao seu personal para importar o treino, ou vá em
-          <b>Perfil → Área do Professor</b> para importar a planilha de Excel.</p>
-          <button class="btn secondary sm" id="go-prof">Área do Professor</button>
-        </div>`;
-    } else {
-      const week = state.plan.weeks[0];
-      const next = nextIncompleteDay(week);
-      const prog = weekProgress(week);
-      planCard = `
-        <div class="card tap" id="continue-card">
-          <div class="row between">
-            <span class="pill primary">${esc(state.plan.fileName ? "Plano ativo" : "Treino")}</span>
-            <span class="muted small">Semana ${week.week}</span>
-          </div>
-          <h2 style="margin-top:10px">${next ? esc(next.day) : "Semana concluída 🎉"}</h2>
-          <p class="muted">${next ? next.exercises.length + " exercícios" : "Ótimo trabalho!"}</p>
-          <div class="progress" style="margin:12px 0 6px"><span style="width:${prog}%"></span></div>
-          <div class="row between"><span class="muted small">Progresso da semana</span><span class="small" style="font-weight:700">${prog}%</span></div>
-          ${next ? `<button class="btn" style="margin-top:14px" id="start-btn">▶ ${prog > 0 ? "Continuar treino" : "Iniciar treino"}</button>` : ""}
-        </div>`;
-    }
-
-    const stats = await computeStats();
-
     renderScreen(
       `
       <div class="top-header">
@@ -367,87 +336,17 @@
           <div class="home-greet">${greet},</div>
           <h1 class="home-name">${esc(first)}</h1>
         </div>
-      </div>
-      ${planCard}
-      <div class="grid-2">
-        <div class="card"><div class="stat-value grad-text">${stats.sessions}</div><div class="stat-label">Treinos concluídos</div></div>
-        <div class="card"><div class="stat-value grad-text">${stats.sets}</div><div class="stat-label">Séries registradas</div></div>
-        <div class="card"><div class="stat-value grad-text">${stats.volume}</div><div class="stat-label">Volume total (kg)</div></div>
-        <div class="card"><div class="stat-value grad-text">${state.plan ? state.plan.totalWeeks : 0}</div><div class="stat-label">Semanas no plano</div></div>
       </div>`,
       { active: "home" }
     );
-
     startHomeClock();
-
-    const go = qs("#go-prof");
-    if (go) go.addEventListener("click", () => navigate("professor"));
-    const cont = qs("#continue-card");
-    if (cont) cont.addEventListener("click", () => navigate("treinos"));
-    const startBtn = qs("#start-btn");
-    if (startBtn) {
-      startBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const week = state.plan.weeks[0];
-        const next = nextIncompleteDay(week) || week.days[0];
-        navigate(`workout/${week.week}/${encodeURIComponent(next.day)}`);
-      });
-    }
   };
 
-  // ---- Treinos (lista semanas/dias) -------------------------------------
+  // ---- Treinos (vazia por enquanto) -------------------------------------
   VIEWS.treinos = async function () {
-    await loadPlan();
-    if (!state.plan) {
-      renderScreen(
-        `<h1>Treinos</h1>${emptyState("🏋️", "Sem treino importado", "Importe a planilha na Área do Professor.")}
-         <button class="btn secondary" id="go-prof">Ir para Área do Professor</button>`,
-        { active: "treinos" }
-      );
-      qs("#go-prof").addEventListener("click", () => navigate("professor"));
-      return;
-    }
-
-    if (state.currentWeek == null) state.currentWeek = state.plan.weeks[0].week;
-    const week = state.plan.weeks.find((w) => w.week === state.currentWeek) || state.plan.weeks[0];
-
-    const weekChips = state.plan.weeks
-      .map(
-        (w) =>
-          `<button class="chip ${w.week === week.week ? "active" : ""}" data-week="${w.week}">Semana ${w.week}</button>`
-      )
-      .join("");
-
-    const dayCards = week.days
-      .map((d) => {
-        const prog = dayProgress(week.week, d);
-        return `
-        <div class="card tap" data-day="${esc(d.day)}">
-          <div class="row between">
-            <h3>${esc(d.day)}</h3>
-            <span class="pill ${prog === 100 ? "primary" : "info"}">${prog}%</span>
-          </div>
-          <p class="muted small">${d.exercises.length} exercícios · ${d.exercises.reduce((a, e) => a + e.sets, 0)} séries</p>
-          <div class="progress" style="margin-top:8px"><span style="width:${prog}%"></span></div>
-        </div>`;
-      })
-      .join("");
-
     renderScreen(
-      `<h1>Treinos</h1>
-       <div class="day-chips">${weekChips}</div>
-       ${dayCards}`,
+      `<h1>Treinos</h1>${emptyState("🏋️", "Em breve", "Esta área estará disponível em breve.")}`,
       { active: "treinos" }
-    );
-
-    qsa(".chip[data-week]").forEach((c) =>
-      c.addEventListener("click", () => {
-        state.currentWeek = parseInt(c.dataset.week, 10);
-        VIEWS.treinos();
-      })
-    );
-    qsa(".card[data-day]").forEach((c) =>
-      c.addEventListener("click", () => navigate(`workout/${week.week}/${encodeURIComponent(c.dataset.day)}`))
     );
   };
 
@@ -651,8 +550,7 @@
   // ---- Evolução (placeholder do próximo módulo) --------------------------
   VIEWS.evolucao = async function () {
     renderScreen(
-      `<h1>Evolução</h1>
-       ${emptyState("📈", "Gráficos em breve", "No próximo módulo entram os gráficos de carga, peso corporal, volume e frequência — usando os dados que você já está registrando nos treinos.")}`,
+      `<h1>Evolução</h1>${emptyState("📈", "Em breve", "Esta área estará disponível em breve.")}`,
       { active: "evolucao" }
     );
   };
@@ -660,8 +558,7 @@
   // ---- Agenda (placeholder) ---------------------------------------------
   VIEWS.agenda = async function () {
     renderScreen(
-      `<h1>Agenda</h1>
-       ${emptyState("📅", "Calendário em breve", "Aqui vai aparecer o calendário com dias treinados, faltas e cardio.")}`,
+      `<h1>Agenda</h1>${emptyState("📅", "Em breve", "Esta área estará disponível em breve.")}`,
       { active: "agenda" }
     );
   };
@@ -1189,35 +1086,20 @@
     home: {
       title: "Início",
       items: [
-        ["🏠", "Esta é sua tela inicial: veja o próximo treino e o progresso da semana."],
-        ["▶️", "Toque em <b>Iniciar treino</b> para começar o treino do dia."],
-        ["📊", "Os cards mostram treinos concluídos, séries, volume e semanas do plano."]
+        ["👋", "Sua tela inicial, com a data, a hora e as boas-vindas."]
       ]
     },
     treinos: {
       title: "Treinos",
-      items: [
-        ["📅", "Escolha a <b>semana do mês</b> (1 a 4) nos botões do topo."],
-        ["📆", "Cada card é um <b>dia da semana</b> (Domingo a Sábado). Toque para executar o treino do dia."],
-        ["✅", "A porcentagem mostra quanto daquele dia você já concluiu."]
-      ]
-    },
-    workout: {
-      title: "Executando o treino",
-      items: [
-        ["🏋️", "Para cada exercício, ajuste o <b>peso</b> e as <b>repetições</b> com os botões − e +."],
-        ["✔️", "Toque no <b>✔</b> ao terminar cada série — o cronômetro de descanso inicia sozinho."],
-        ["⏱️", "Use os botões do cronômetro (45s, 60s...) para controlar o descanso manualmente."],
-        ["💾", "Seus pesos ficam salvos: na próxima vez já aparecem preenchidos."]
-      ]
+      items: [["🚧", "Esta área estará disponível em breve."]]
     },
     evolucao: {
       title: "Evolução",
-      items: [["📈", "Em breve: gráficos de carga, peso corporal, volume e frequência."]]
+      items: [["🚧", "Esta área estará disponível em breve."]]
     },
     agenda: {
       title: "Agenda",
-      items: [["📆", "Em breve: calendário com os dias treinados, faltas e cardio."]]
+      items: [["🚧", "Esta área estará disponível em breve."]]
     },
     perfil: {
       title: "Perfil",

@@ -5,6 +5,15 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.11.0] — 2026-07-21
+
+### Simplificação temporária
+- **Home** passou a exibir apenas a **data/hora**, a **saudação** (Bom dia/Boa tarde/Boa noite)
+  e o **nome** do usuário.
+- **Treinos**, **Evolução** e **Agenda** ficaram **vazias** ("Em breve") por enquanto.
+- Perfil, Área do Professor e Dados do aluno continuam funcionando normalmente.
+  (O código das funcionalidades foi mantido para reativação futura.)
+
 ## [1.10.0] — 2026-07-20
 
 ### Treino por semana do mês e dia da semana
