@@ -5,7 +5,7 @@
   "use strict";
 
   // Versão do app — manter igual em version.json e sw.js (CACHE_VERSION).
-  const APP_VERSION = "1.14.3";
+  const APP_VERSION = "1.14.4";
 
   // ---- Estado ------------------------------------------------------------
   const state = {
@@ -849,7 +849,6 @@
       ? `<div class="card">
           <div class="row between"><h3>Treino atual</h3><span class="pill primary">${state.plan.totalExercises} exercícios</span></div>
           <p class="muted small">${state.plan.totalTypes || (state.plan.types ? state.plan.types.length : 0)} tipo(s) · importado em ${new Date(state.plan.importedAt).toLocaleDateString("pt-BR")}</p>
-          <button class="btn danger sm" id="remove-plan" style="margin-top:10px">Remover treino</button>
         </div>`
       : `<div class="card muted">Nenhum treino importado ainda.</div>`;
 
@@ -858,7 +857,6 @@
       ? `<div class="card">
           <div class="row between"><h3>Ficha atual</h3><span class="pill primary">${fichaRec.count} campos</span></div>
           <p class="muted small">Importada em ${new Date(fichaRec.importedAt).toLocaleDateString("pt-BR")}</p>
-          <button class="btn danger sm" id="remove-ficha" style="margin-top:10px">Remover ficha</button>
         </div>`
       : `<div class="card muted">Nenhuma ficha importada ainda.</div>`;
 
@@ -902,27 +900,6 @@
     fileInput.addEventListener("change", (e) => {
       if (e.target.files[0]) handleImport(e.target.files[0]);
     });
-
-    const removeBtn = qs("#remove-plan");
-    if (removeBtn)
-      removeBtn.addEventListener("click", () =>
-        confirmModal("Remover treino?", "Isso apaga o treino importado (os registros de carga são mantidos).", async () => {
-          await DB.delete("plans", state.user.email);
-          state.plan = null;
-          toast("Treino removido.");
-          VIEWS.professor();
-        }, "Remover", true)
-      );
-
-    const removeFichaBtn = qs("#remove-ficha");
-    if (removeFichaBtn)
-      removeFichaBtn.addEventListener("click", () =>
-        confirmModal("Remover ficha?", "Isso apaga os dados da ficha do aluno neste aparelho.", async () => {
-          await DB.delete("settings", "ficha:" + state.user.email);
-          toast("Ficha removida.");
-          VIEWS.professor();
-        }, "Remover", true)
-      );
 
     async function handleImport(file) {
       toast("Lendo planilha…");

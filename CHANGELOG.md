@@ -5,6 +5,12 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.14.4] — 2026-07-21
+
+### Área do Professor
+- Removidos os botões "Remover treino" e "Remover ficha" — para trocar, basta importar
+  um novo arquivo (o app já pergunta se deseja substituir).
+
 ## [1.14.3] — 2026-07-21
 
 ### Foto de perfil
