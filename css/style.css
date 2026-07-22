@@ -182,7 +182,7 @@ textarea.input, textarea.form-input { min-height: 70px; resize: vertical; }
 /* ---- Auth / Login (abas) ---------------------------------------------- */
 .auth-wrap { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 18px; }
 .login-logo { text-align: center; margin-bottom: 26px; }
-.login-logo h1 { font-size: 3.4rem; font-weight: 800; letter-spacing: 4px; margin: 0 0 4px; line-height: 1; }
+.login-logo h1 { font-size: 3.4rem; font-weight: 800; letter-spacing: 4px; margin: 0 0 4px; line-height: 1; color: var(--primary); }
 .login-logo p { color: var(--text2); font-size: .9rem; letter-spacing: 6px; font-weight: 600; margin: 0; }
 @media (min-width: 900px) { .login-logo h1 { font-size: 4rem; } }
 .login-box { width: 100%; max-width: 430px; border-radius: var(--radius); padding: 8px; }
@@ -191,9 +191,18 @@ textarea.input, textarea.form-input { min-height: 70px; resize: vertical; }
 .login-tab.active { background: var(--grad); color: var(--primary-ink); box-shadow: 0 6px 16px rgba(0, 210, 106, .3); }
 .login-form { display: none; padding: 14px 18px 20px; animation: fade .25s; }
 .login-form.active { display: block; }
-.role-toggle { display: flex; gap: 6px; background: var(--glass-input); border-radius: 12px; padding: 5px; margin-bottom: 16px; }
-.role-opt { flex: 1; padding: 10px; border: none; background: transparent; color: var(--text2); font-weight: 700; font-size: .88rem; border-radius: 9px; cursor: pointer; transition: all .2s; }
-.role-opt.active { background: var(--grad); color: #fff; box-shadow: 0 6px 16px rgba(0, 210, 106, .3); }
+.role-cards { display: flex; gap: 10px; margin-bottom: 16px; }
+.role-card {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 16px 10px; border-radius: 15px; border: 1.5px solid var(--stroke);
+  background: var(--glass-input); color: var(--text2); cursor: pointer;
+  transition: transform .15s, border-color .18s, background .18s, color .18s, box-shadow .18s;
+}
+.role-card .role-ic { display: flex; }
+.role-card .role-ic svg { width: 30px; height: 30px; }
+.role-card .role-name { font-weight: 700; font-size: .95rem; }
+.role-card.active { border-color: transparent; background: var(--grad); color: #fff; box-shadow: 0 8px 20px rgba(0, 210, 106, .3); transform: translateY(-1px); }
+.role-card:active { transform: scale(.97); }
 
 /* ---- Badges / pills --------------------------------------------------- */
 .pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 999px; font-size: .76rem; font-weight: 700; background: var(--glass-input); color: var(--text2); }

@@ -5,7 +5,7 @@
   "use strict";
 
   // Versão do app — manter igual em version.json e sw.js (CACHE_VERSION).
-  const APP_VERSION = "1.18.0";
+  const APP_VERSION = "1.18.1";
 
   // ---- Estado ------------------------------------------------------------
   const state = {
@@ -187,6 +187,10 @@
   // ---- Autenticação (login + cadastro com abas, estilo ELTECH) ----------
   const EYE_SVG =
     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`;
+  const ROLE_ALUNO_ICON =
+    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg>`;
+  const ROLE_PROF_ICON =
+    `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11v4.5c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5V11"/><path d="M22 9v5"/></svg>`;
 
   function renderAuth(activeTab) {
     const rulesHtml = Auth.PASSWORD_RULES.map(
@@ -207,9 +211,15 @@
           </div>
 
           <div class="login-form ${isReg ? "" : "active"}" id="form-login">
-            <div class="role-toggle" id="role-toggle">
-              <button type="button" class="role-opt active" data-role="aluno">Aluno</button>
-              <button type="button" class="role-opt" data-role="professor">Professor</button>
+            <div class="role-cards" id="role-toggle">
+              <button type="button" class="role-card active" data-role="aluno">
+                <span class="role-ic">${ROLE_ALUNO_ICON}</span>
+                <span class="role-name">Aluno</span>
+              </button>
+              <button type="button" class="role-card" data-role="professor">
+                <span class="role-ic">${ROLE_PROF_ICON}</span>
+                <span class="role-name">Professor</span>
+              </button>
             </div>
             <div class="form-group"><label>E-mail ou nome</label>
               <input class="form-input" id="l-email" type="text" autocomplete="username" placeholder="voce@email.com ou seu nome" /></div>
@@ -272,10 +282,10 @@
 
   function bindLogin() {
     let loginRole = "aluno";
-    qsa(".role-opt").forEach((b) =>
+    qsa(".role-card").forEach((b) =>
       b.addEventListener("click", () => {
         loginRole = b.dataset.role;
-        qsa(".role-opt").forEach((o) => o.classList.toggle("active", o === b));
+        qsa(".role-card").forEach((o) => o.classList.toggle("active", o === b));
         qs("#token-group").style.display = loginRole === "professor" ? "" : "none";
       })
     );

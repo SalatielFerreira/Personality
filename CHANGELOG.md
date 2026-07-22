@@ -5,6 +5,13 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.18.1] — 2026-07-22
+
+### Login mais bonito
+- "ELTECH" na tela de login/cadastro agora em **verde** (a cor do app).
+- Seleção **Aluno / Professor** virou dois **cards com ícone** (pessoa e capelo), grandes e
+  fáceis de tocar; o selecionado fica **verde**.
+
 ## [1.18.0] — 2026-07-22
 
 ### Perfis de acesso: Aluno e Professor
