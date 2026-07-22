@@ -5,6 +5,15 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.18.0] — 2026-07-22
+
+### Perfis de acesso: Aluno e Professor
+- No login, agora há um seletor **Aluno / Professor** (o cadastro é o mesmo para os dois).
+- **Login de professor** exige, além de e-mail/nome + senha corretos, um **token** válido
+  (por ora: EltechVitor, EltechBeatriz). Sem token válido, não entra como professor.
+- **Professor** tem navegação própria: **Home · Criar treino · Alunos · Perfil** (Home e Perfil
+  iguais aos do aluno). **Criar treino** e **Alunos** são telas placeholder por enquanto.
+
 ## [1.17.1] — 2026-07-22
 
 ### Simplificação

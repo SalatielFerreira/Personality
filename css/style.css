@@ -191,6 +191,9 @@ textarea.input, textarea.form-input { min-height: 70px; resize: vertical; }
 .login-tab.active { background: var(--grad); color: var(--primary-ink); box-shadow: 0 6px 16px rgba(0, 210, 106, .3); }
 .login-form { display: none; padding: 14px 18px 20px; animation: fade .25s; }
 .login-form.active { display: block; }
+.role-toggle { display: flex; gap: 6px; background: var(--glass-input); border-radius: 12px; padding: 5px; margin-bottom: 16px; }
+.role-opt { flex: 1; padding: 10px; border: none; background: transparent; color: var(--text2); font-weight: 700; font-size: .88rem; border-radius: 9px; cursor: pointer; transition: all .2s; }
+.role-opt.active { background: var(--grad); color: #fff; box-shadow: 0 6px 16px rgba(0, 210, 106, .3); }
 
 /* ---- Badges / pills --------------------------------------------------- */
 .pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 999px; font-size: .76rem; font-weight: 700; background: var(--glass-input); color: var(--text2); }

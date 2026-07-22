@@ -5,7 +5,7 @@
   "use strict";
 
   // Versão do app — manter igual em version.json e sw.js (CACHE_VERSION).
-  const APP_VERSION = "1.17.1";
+  const APP_VERSION = "1.18.0";
 
   // ---- Estado ------------------------------------------------------------
   const state = {
@@ -142,17 +142,27 @@
     treinos: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8v8M8 6v12M16 6v12M20 8v8M8 12h8"/></svg>`,
     evolucao: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V4M4 20h16"/><polyline points="7 14 11 10 14 13 20 6.5"/><polyline points="20 10 20 6.5 16.5 6.5"/></svg>`,
     agenda: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4.5" width="18" height="16" rx="2.5"/><path d="M3 9.5h18M8 3v3M16 3v3"/></svg>`,
-    perfil: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg>`
+    perfil: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg>`,
+    criar: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2.5"/><path d="M8 3.5V6h8V3.5"/><path d="M12 10.5v6M9 13.5h6"/></svg>`,
+    alunos: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20a5.5 5.5 0 0 1 11 0"/><path d="M16 5.5a3 3 0 0 1 0 5.6"/><path d="M17.5 20a5.5 5.5 0 0 0-3-4.9"/></svg>`
   };
 
   function navBar(active) {
-    const items = [
-      { key: "home", label: "Home" },
-      { key: "treinos", label: "Treinos" },
-      { key: "evolucao", label: "Evolução" },
-      { key: "agenda", label: "Agenda" },
-      { key: "perfil", label: "Perfil" }
-    ];
+    const prof = state.user && state.user.role === "professor";
+    const items = prof
+      ? [
+          { key: "home", label: "Home" },
+          { key: "criar", label: "Criar treino" },
+          { key: "alunos", label: "Alunos" },
+          { key: "perfil", label: "Perfil" }
+        ]
+      : [
+          { key: "home", label: "Home" },
+          { key: "treinos", label: "Treinos" },
+          { key: "evolucao", label: "Evolução" },
+          { key: "agenda", label: "Agenda" },
+          { key: "perfil", label: "Perfil" }
+        ];
     return `<nav class="bottom-nav">${items
       .map(
         (i) =>
@@ -197,6 +207,10 @@
           </div>
 
           <div class="login-form ${isReg ? "" : "active"}" id="form-login">
+            <div class="role-toggle" id="role-toggle">
+              <button type="button" class="role-opt active" data-role="aluno">Aluno</button>
+              <button type="button" class="role-opt" data-role="professor">Professor</button>
+            </div>
             <div class="form-group"><label>E-mail ou nome</label>
               <input class="form-input" id="l-email" type="text" autocomplete="username" placeholder="voce@email.com ou seu nome" /></div>
             <div class="form-group"><label>Senha</label>
@@ -205,6 +219,8 @@
                 <button class="pass-toggle" data-target="l-pass" type="button">${EYE_SVG}</button>
               </div>
             </div>
+            <div class="form-group" id="token-group" style="display:none"><label>Token do professor</label>
+              <input class="form-input" id="l-token" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" placeholder="Token fornecido pelo administrador" /></div>
             <label class="checkbox-row" style="margin-bottom:14px"><input type="checkbox" id="l-keep" checked /> Manter conectado</label>
             <div class="error-text" id="l-error"></div>
             <button class="btn" id="l-submit">Entrar</button>
@@ -255,14 +271,24 @@
   }
 
   function bindLogin() {
+    let loginRole = "aluno";
+    qsa(".role-opt").forEach((b) =>
+      b.addEventListener("click", () => {
+        loginRole = b.dataset.role;
+        qsa(".role-opt").forEach((o) => o.classList.toggle("active", o === b));
+        qs("#token-group").style.display = loginRole === "professor" ? "" : "none";
+      })
+    );
+
     async function doLogin() {
       const email = qs("#l-email").value;
       const password = qs("#l-pass").value;
       const keep = qs("#l-keep").checked;
+      const token = qs("#l-token").value;
       const err = qs("#l-error");
       err.textContent = "";
       try {
-        state.user = await Auth.login({ email, password, keep });
+        state.user = await Auth.login({ email, password, keep, role: loginRole, token });
         toast("Bem-vindo, " + state.user.name.split(" ")[0] + "!", "success");
         navigate("home");
       } catch (e) {
@@ -656,6 +682,22 @@
     renderScreen(
       `<h1>Evolução</h1>${emptyState("📈", "Em breve", "Esta área estará disponível em breve.")}`,
       { active: "evolucao" }
+    );
+  };
+
+  // ---- Professor: Criar treino (placeholder) ----------------------------
+  VIEWS.criar = async function () {
+    renderScreen(
+      `<h1>Criar treino</h1>${emptyState("🏋️", "Em breve", "Aqui você vai montar os treinos dos seus alunos. Em breve.")}`,
+      { active: "criar", help: "criar" }
+    );
+  };
+
+  // ---- Professor: Alunos (placeholder) ----------------------------------
+  VIEWS.alunos = async function () {
+    renderScreen(
+      `<h1>Alunos</h1>${emptyState("👥", "Em breve", "Aqui você vai gerenciar seus alunos. Em breve.")}`,
+      { active: "alunos", help: "alunos" }
     );
   };
 
@@ -1307,6 +1349,14 @@
         ["💾", "Faça <b>backup</b> dos seus dados (exportar/importar) ao trocar de aparelho."],
         ["🚪", "Use <b>Sair da conta</b> para trocar de usuário — seus dados continuam salvos."]
       ]
+    },
+    criar: {
+      title: "Criar treino",
+      items: [["🏋️", "Área do professor para montar os treinos dos alunos. Em breve."]]
+    },
+    alunos: {
+      title: "Alunos",
+      items: [["👥", "Área do professor para gerenciar seus alunos. Em breve."]]
     },
     aluno: {
       title: "Dados do aluno",

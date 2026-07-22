@@ -6,7 +6,15 @@
   "use strict";
 
   const SESSION_KEY = "personality.session";
+  const ROLE_KEY = "personality.role";
   const PBKDF2_ITERATIONS = 150000;
+
+  // Tokens de professor ativos (fornecidos pelo dono do software).
+  const PROFESSOR_TOKENS = ["EltechVitor", "EltechBeatriz"];
+  function isValidToken(t) {
+    const v = (t || "").trim().toLowerCase();
+    return PROFESSOR_TOKENS.some((tok) => tok.toLowerCase() === v);
+  }
 
   // ---- Validação de senha ------------------------------------------------
   const PASSWORD_RULES = [
@@ -125,13 +133,20 @@
     return all.find((u) => (u.name || "").trim().toLowerCase() === id) || null;
   }
 
-  async function login({ email, password, keep = true }) {
+  async function login({ email, password, keep = true, role = "aluno", token = "" }) {
     const user = await findUser(email);
     if (!user) throw new Error("Conta não encontrada.");
     const ok = await verifyPassword(password, user.salt, user.passwordHash);
     if (!ok) throw new Error("Senha incorreta.");
-    setSession(user.email, keep);
-    return sanitize(user);
+    let sessionRole = "aluno";
+    if (role === "professor") {
+      if (!isValidToken(token)) throw new Error("Token de professor inválido.");
+      sessionRole = "professor";
+    }
+    setSession(user.email, keep, sessionRole);
+    const safe = sanitize(user);
+    safe.role = sessionRole;
+    return safe;
   }
 
   // keep=true  -> sessão persiste entre aberturas (localStorage)
@@ -150,19 +165,27 @@
     return true;
   }
 
-  function setSession(email, keep = true) {
+  function setSession(email, keep = true, role = "aluno") {
     logout();
-    (keep ? localStorage : sessionStorage).setItem(SESSION_KEY, email);
+    const store = keep ? localStorage : sessionStorage;
+    store.setItem(SESSION_KEY, email);
+    store.setItem(ROLE_KEY, role);
   }
   function logout() {
     localStorage.removeItem(SESSION_KEY);
     sessionStorage.removeItem(SESSION_KEY);
+    localStorage.removeItem(ROLE_KEY);
+    sessionStorage.removeItem(ROLE_KEY);
   }
   async function currentUser() {
     const email = localStorage.getItem(SESSION_KEY) || sessionStorage.getItem(SESSION_KEY);
     if (!email) return null;
     const user = await DB.get("users", email);
-    return user ? sanitize(user) : null;
+    if (!user) return null;
+    const role = localStorage.getItem(ROLE_KEY) || sessionStorage.getItem(ROLE_KEY) || "aluno";
+    const safe = sanitize(user);
+    safe.role = role;
+    return safe;
   }
 
   function sanitize(user) {
