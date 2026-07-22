@@ -5,7 +5,7 @@
   "use strict";
 
   // Versão do app — manter igual em version.json e sw.js (CACHE_VERSION).
-  const APP_VERSION = "1.18.1";
+  const APP_VERSION = "1.18.2";
 
   // ---- Estado ------------------------------------------------------------
   const state = {
@@ -105,6 +105,7 @@
   async function route() {
     if (wkInterval) { clearInterval(wkInterval); wkInterval = null; }
     const { name, params } = parseHash();
+    if (PUBLIC_ROUTES.includes(name)) removeInstallBanner();
     if (!state.user && !PUBLIC_ROUTES.includes(name)) {
       return navigate("login");
     }
@@ -205,11 +206,6 @@
           <p>PERSONALITY</p>
         </div>
         <div class="login-box glass">
-          <div class="login-tabs">
-            <button class="login-tab ${isReg ? "" : "active"}" data-tab="login">Entrar</button>
-            <button class="login-tab ${isReg ? "active" : ""}" data-tab="register">Cadastrar</button>
-          </div>
-
           <div class="login-form ${isReg ? "" : "active"}" id="form-login">
             <div class="role-cards" id="role-toggle">
               <button type="button" class="role-card active" data-role="aluno">
@@ -231,7 +227,10 @@
             </div>
             <div class="form-group" id="token-group" style="display:none"><label>Token do professor</label>
               <input class="form-input" id="l-token" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" placeholder="Token fornecido pelo administrador" /></div>
-            <label class="checkbox-row" style="margin-bottom:14px"><input type="checkbox" id="l-keep" checked /> Manter conectado</label>
+            <div class="row between" style="align-items:center; margin-bottom:14px">
+              <label class="checkbox-row" style="margin:0"><input type="checkbox" id="l-keep" checked /> Manter conectado</label>
+              <button type="button" class="btn-link" id="go-register">Cadastrar</button>
+            </div>
             <div class="error-text" id="l-error"></div>
             <button class="btn" id="l-submit">Entrar</button>
           </div>
@@ -257,6 +256,9 @@
               </div>
               <div class="small" id="match-msg" style="margin-top:6px;min-height:1em"></div>
             </div>
+            <div class="row" style="justify-content:flex-end; margin-bottom:12px">
+              <button type="button" class="btn-link" id="go-login">Entrar</button>
+            </div>
             <div class="error-text" id="r-error"></div>
             <button class="btn" id="r-submit" disabled>Criar conta</button>
           </div>
@@ -265,16 +267,14 @@
 
     bindPasswordToggles();
 
-    // Alternância de abas (sem recarregar / sem perder o que foi digitado)
-    qsa(".login-tab").forEach((tab) =>
-      tab.addEventListener("click", () => {
-        const target = tab.dataset.tab;
-        qsa(".login-tab").forEach((t) => t.classList.toggle("active", t === tab));
-        qs("#form-login").classList.toggle("active", target === "login");
-        qs("#form-register").classList.toggle("active", target === "register");
-        if (location.hash !== "#/" + target) history.replaceState(null, "", "#/" + target);
-      })
-    );
+    // Alternância Entrar/Cadastrar por um único link (sem recarregar)
+    function showAuthTab(target) {
+      qs("#form-login").classList.toggle("active", target === "login");
+      qs("#form-register").classList.toggle("active", target === "register");
+      if (location.hash !== "#/" + target) history.replaceState(null, "", "#/" + target);
+    }
+    qs("#go-register").addEventListener("click", () => showAuthTab("register"));
+    qs("#go-login").addEventListener("click", () => showAuthTab("login"));
 
     bindLogin();
     bindRegister();
@@ -301,6 +301,7 @@
         state.user = await Auth.login({ email, password, keep, role: loginRole, token });
         toast("Bem-vindo, " + state.user.name.split(" ")[0] + "!", "success");
         navigate("home");
+        maybeShowInstall();
       } catch (e) {
         err.textContent = e.message;
       }
@@ -354,6 +355,7 @@
         state.user = user;
         toast("Conta criada com sucesso!", "success");
         navigate("home");
+        maybeShowInstall();
       } catch (e) {
         err.textContent = e.message;
       }
@@ -1499,7 +1501,11 @@
     window.addEventListener("offline", () => { const b = qs(".online-badge"); if (b) route(); });
     document.addEventListener("keydown", handleEnterKey);
     route();
-    // Mostra o convite para instalar sempre que abrir (se ainda não instalado).
+    // Convite para instalar só quando logado (nunca na tela de login).
+    setTimeout(() => { if (state.user && !isStandalone()) showInstallBanner(); }, 800);
+  }
+
+  function maybeShowInstall() {
     setTimeout(() => { if (!isStandalone()) showInstallBanner(); }, 800);
   }
 

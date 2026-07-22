@@ -5,6 +5,13 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.18.2] — 2026-07-22
+
+### Login
+- O convite "Baixar app" **não aparece mais na tela de login/cadastro** (só depois de entrar).
+- As abas Entrar/Cadastrar viraram **um único link** à direita do "Manter conectado":
+  na tela de Entrar mostra **Cadastrar**; na de Cadastrar mostra **Entrar**.
+
 ## [1.18.1] — 2026-07-22
 
 ### Login mais bonito
