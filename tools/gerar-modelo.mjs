@@ -108,24 +108,24 @@ wsFicha["!cols"] = [{ wch: 34 }, { wch: 20 }, { wch: 30 }];
 XLSX.utils.book_append_sheet(wb, wsFicha, "Ficha do Aluno");
 
 // 2) Treino (por Tipo livre)
-const T = () => ["-", "TÍTULO DO TREINO (MUDAR NOME)", "-", "-", "-", "-", "-"];
+const T = () => ["-", "TÍTULO DO TREINO (MUDAR NOME)", "-", "-", "-", "-"];
 const treinoAoa = [
   ["TREINO DO ALUNO — ELTECH Personality"],
   [],
-  ["Tipo", "Exercício", "Séries", "Repetições", "Descanso", "Observação", "Vídeo"],
+  ["Tipo", "Exercício", "Séries", "Repetições", "Descanso", "Observação"],
   T(),
-  ["A", "Agachamento", 4, "10 - 12", 60, "", ""],
-  ["A", "Cadeira Extensora", 4, "10 - 12", 60, "", ""],
-  ["A", "Cadeira Flexora", 4, "10 - 12", 60, "", ""],
+  ["A", "Agachamento", 4, "10 - 12", 60, ""],
+  ["A", "Cadeira Extensora", 4, "10 - 12", 60, ""],
+  ["A", "Cadeira Flexora", 4, "10 - 12", 60, ""],
   T(),
-  ["B", "Rosca Direta", 3, "12", 60, "", ""],
-  ["B", "Rosca Alternada", 3, "12", 60, "", ""],
+  ["B", "Rosca Direta", 3, "12", 60, ""],
+  ["B", "Rosca Alternada", 3, "12", 60, ""],
   T(),
-  ["C", "Supino Inclinado", 4, "15", 60, "", ""],
-  ["C", "Crossover", 4, "15", 60, "", ""]
+  ["C", "Supino Inclinado", 4, "15", 60, ""],
+  ["C", "Crossover", 4, "15", 60, ""]
 ];
 const wsTreino = XLSX.utils.aoa_to_sheet(treinoAoa);
-wsTreino["!cols"] = [{ wch: 10 }, { wch: 26 }, { wch: 8 }, { wch: 12 }, { wch: 10 }, { wch: 30 }, { wch: 40 }];
+wsTreino["!cols"] = [{ wch: 10 }, { wch: 26 }, { wch: 8 }, { wch: 12 }, { wch: 10 }, { wch: 30 }];
 XLSX.utils.book_append_sheet(wb, wsTreino, "Treino");
 
 // 3) Biblioteca de exercícios (nome -> vídeo)
@@ -167,7 +167,7 @@ const guide = [
   ["• Uma linha por exercício, agrupados pelo Tipo."],
   ["• Repetições pode ser um número (10) ou uma faixa (10-12). Descanso em segundos."],
   ["• Observação: recado opcional para o aluno naquele exercício."],
-  ["• Vídeo: cole o link do YouTube (opcional) OU deixe em branco e cadastre na aba 'Exercícios'."],
+  ["• O vídeo de cada exercício vem da aba 'Exercícios' (pelo nome) — não precisa aqui."],
   [""],
   ["ABA 'EXERCÍCIOS' (biblioteca de vídeos)"],
   ["• Cadastre cada exercício e o link do YouTube uma única vez."],

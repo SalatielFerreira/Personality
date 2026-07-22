@@ -5,6 +5,12 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.17.1] — 2026-07-22
+
+### Simplificação
+- Removida a coluna **Vídeo** da aba **Treino** (era redundante): o vídeo agora vem só da
+  aba **Exercícios** (pelo nome). O app ainda lê uma coluna Vídeo no Treino se ela existir.
+
 ## [1.17.0] — 2026-07-22
 
 ### Biblioteca de exercícios (vídeos)
