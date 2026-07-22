@@ -48,8 +48,9 @@
 
   // Lê a aba de treino agrupando por "Tipo" (livre: A, B, Peito, Segunda...).
   // Colunas: Tipo | Exercício | Séries | Repetições | Descanso | Observação.
-  function parsePlanSheet(XLSX, sheet, fileName) {
+  function parsePlanSheet(XLSX, sheet, fileName, videoMap) {
     if (!sheet) return null;
+    videoMap = videoMap || {};
     const aoa = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
     if (!aoa.length) return null;
 
@@ -95,13 +96,14 @@
         titleByKey[key] = pendingTitle;
         pendingTitle = null;
       }
+      const ownVideo = String(col.video != null ? row[col.video] : "").trim();
       byKey[key].push({
         name: exercise,
         sets: parseInt(row[col.sets], 10) || 3,
         reps: String(col.reps != null ? row[col.reps] : "").trim() || "10",
         rest: parseInt(row[col.rest], 10) || 60,
         obs: String(col.obs != null ? row[col.obs] : "").trim(),
-        video: String(col.video != null ? row[col.video] : "").trim()
+        video: ownVideo || videoMap[normalizeKey(exercise)] || ""
       });
       count++;
     }
@@ -266,6 +268,31 @@
     return count ? { data: out, count } : null;
   }
 
+  // Biblioteca de exercícios: mapa nome-normalizado -> link do vídeo.
+  function parseLibrarySheet(XLSX, sheet) {
+    const map = {};
+    if (!sheet) return map;
+    const aoa = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+    let hIdx = -1, exCol = -1, vidCol = -1;
+    for (let i = 0; i < aoa.length; i++) {
+      let e = -1, v = -1;
+      (aoa[i] || []).forEach((c, idx) => {
+        const f = HEADER_MAP[normalizeKey(c)];
+        if (f === "exercise" && e < 0) e = idx;
+        if (f === "video" && v < 0) v = idx;
+      });
+      if (e >= 0) { hIdx = i; exCol = e; vidCol = v; break; }
+    }
+    if (hIdx < 0 || vidCol < 0) return map;
+    for (let i = hIdx + 1; i < aoa.length; i++) {
+      const row = aoa[i] || [];
+      const name = String(row[exCol] == null ? "" : row[exCol]).trim();
+      const vid = String(row[vidCol] == null ? "" : row[vidCol]).trim();
+      if (name && vid) map[normalizeKey(name)] = vid;
+    }
+    return map;
+  }
+
   // Lê o arquivo inteiro e devolve { plan, ficha } (cada um pode ser null).
   async function parseWorkbook(file) {
     const XLSX = await loadXLSX();
@@ -274,8 +301,13 @@
     const names = wb.SheetNames;
     const treinoName = names.find((n) => normalizeKey(n).includes("treino")) || names[0];
     const fichaName = names.find((n) => normalizeKey(n).includes("ficha"));
+    const libName = names.find((n) => {
+      const k = normalizeKey(n);
+      return k.includes("exerc") || k.includes("bibliotec") || k.includes("base");
+    });
+    const videoMap = libName ? parseLibrarySheet(XLSX, wb.Sheets[libName]) : {};
     return {
-      plan: treinoName ? parsePlanSheet(XLSX, wb.Sheets[treinoName], file.name) : null,
+      plan: treinoName ? parsePlanSheet(XLSX, wb.Sheets[treinoName], file.name, videoMap) : null,
       ficha: fichaName ? parseFichaSheet(XLSX, wb.Sheets[fichaName]) : null
     };
   }
@@ -334,6 +366,22 @@
     ];
   }
 
+  function buildLibraryAoa() {
+    return [
+      ["BIBLIOTECA DE EXERCÍCIOS — ELTECH Personality"],
+      ["Cadastre aqui cada exercício e o link do vídeo (uma vez)."],
+      ["No Treino, ao usar o mesmo nome, o vídeo é puxado automaticamente."],
+      [],
+      ["Exercício", "Vídeo"],
+      ["Agachamento", ""],
+      ["Cadeira Extensora", ""],
+      ["Cadeira Flexora", ""],
+      ["Rosca Direta", ""],
+      ["Supino Inclinado", ""],
+      ["Crossover", ""]
+    ];
+  }
+
   function buildGuideAoa() {
     return [
       ["COMO PREENCHER — ELTECH Personality"],
@@ -355,7 +403,12 @@
       ["• Uma linha por exercício, agrupados pelo Tipo."],
       ["• Repetições pode ser um número (10) ou uma faixa (10-12). Descanso em segundos."],
       ["• Observação: recado opcional para o aluno naquele exercício."],
-      ["• Vídeo: cole o link do YouTube do exercício (opcional; abre no app com internet)."],
+      ["• Vídeo: cole o link do YouTube (opcional) OU deixe em branco e cadastre na aba 'Exercícios'."],
+      [""],
+      ["ABA 'EXERCÍCIOS' (biblioteca de vídeos)"],
+      ["• Cadastre cada exercício e o link do YouTube uma única vez."],
+      ["• No Treino, ao escrever o mesmo nome do exercício, o vídeo é puxado automaticamente."],
+      ["• Maiúsculas/minúsculas e acentos não importam para o casamento do nome."],
       [""],
       ["Depois é só enviar o arquivo ao aluno. Ele importa em: Perfil > Área do Professor > Importar dados."]
     ];
@@ -375,7 +428,12 @@
     wsTreino["!cols"] = [{ wch: 10 }, { wch: 26 }, { wch: 8 }, { wch: 12 }, { wch: 10 }, { wch: 30 }, { wch: 40 }];
     XLSX.utils.book_append_sheet(wb, wsTreino, "Treino");
 
-    // 3) Instruções
+    // 3) Biblioteca de exercícios (nome -> vídeo)
+    const wsLib = XLSX.utils.aoa_to_sheet(buildLibraryAoa());
+    wsLib["!cols"] = [{ wch: 28 }, { wch: 45 }];
+    XLSX.utils.book_append_sheet(wb, wsLib, "Exercícios");
+
+    // 4) Instruções
     const wsGuide = XLSX.utils.aoa_to_sheet(buildGuideAoa());
     wsGuide["!cols"] = [{ wch: 95 }];
     XLSX.utils.book_append_sheet(wb, wsGuide, "Instruções");

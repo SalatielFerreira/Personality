@@ -5,6 +5,13 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.17.0] — 2026-07-22
+
+### Biblioteca de exercícios (vídeos)
+- Nova aba **"Exercícios"** no Excel: o personal cadastra cada exercício e o link do vídeo uma vez.
+- No Treino, ao usar o **mesmo nome** do exercício, o app **puxa o vídeo automaticamente**
+  (ignora maiúsculas/acentos). Link direto na coluna Vídeo do Treino continua tendo prioridade.
+
 ## [1.16.0] — 2026-07-22
 
 ### Dias sem treino no calendário
