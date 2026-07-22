@@ -290,8 +290,11 @@ textarea.input, textarea.form-input { min-height: 70px; resize: vertical; }
 .cal-cell.today { border-color: var(--primary); box-shadow: inset 0 0 0 1px var(--primary); }
 .cal-cell.done { background: var(--grad); color: #fff; border-color: transparent; cursor: pointer; box-shadow: 0 4px 12px rgba(0, 210, 106, .30); }
 .cal-cell.done:active { transform: scale(.93); }
-.cal-legend { display: flex; align-items: center; gap: 8px; margin-top: 16px; font-size: .8rem; color: var(--text2); }
+.cal-cell.missed { background: rgba(255, 77, 79, .16); border-color: rgba(255, 77, 79, .45); color: var(--danger); }
+.cal-legend { display: flex; align-items: center; gap: 16px; margin-top: 16px; font-size: .8rem; color: var(--text2); flex-wrap: wrap; }
+.cal-legend .leg { display: inline-flex; align-items: center; gap: 7px; }
 .cal-legend .dot { width: 13px; height: 13px; border-radius: 4px; background: var(--grad); box-shadow: none; }
+.cal-legend .dot.red { background: var(--danger); }
 
 /* Calendário em telas pequenas (celulares) */
 @media (max-width: 430px) {

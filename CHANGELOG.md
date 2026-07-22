@@ -5,6 +5,14 @@ O formato segue, de forma simplificada, o [Versionamento Semântico](https://sem
 > Ao publicar uma nova versão, mantenha o mesmo número em **3 lugares**:
 > `version.json`, `sw.js` (`CACHE_VERSION`) e `js/app.js` (`APP_VERSION`).
 
+## [1.16.0] — 2026-07-22
+
+### Dias sem treino no calendário
+- Dias **sem treino registrado** ficam **vermelhos** no calendário.
+- Vale apenas a partir da **data de criação da conta** (dias anteriores não são marcados);
+  o dia de hoje e dias futuros também não ficam vermelhos.
+- Legenda atualizada (Treino feito / Sem treino).
+
 ## [1.15.4] — 2026-07-21
 
 ### Correção do calendário

@@ -5,7 +5,7 @@
   "use strict";
 
   // Versão do app — manter igual em version.json e sw.js (CACHE_VERSION).
-  const APP_VERSION = "1.15.4";
+  const APP_VERSION = "1.16.0";
 
   // ---- Estado ------------------------------------------------------------
   const state = {
@@ -675,13 +675,17 @@
     const daysInMonth = new Date(y, m + 1, 0).getDate();
     const monthLabel = new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric" }).format(first);
     const todayISO = localDateISO();
+    // Marca "sem treino" (vermelho) só a partir do dia em que a conta foi criada.
+    const startISO = state.user.createdAt ? localDateISO(new Date(state.user.createdAt)) : todayISO;
     const dows = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
     let cells = "";
     for (let day = 1; day <= daysInMonth; day++) {
       const iso = `${y}-${String(m + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
       const done = !!byDate[iso];
-      const cls = ["cal-cell", done ? "done" : "", iso === todayISO ? "today" : ""].join(" ").trim();
+      const missed = !done && iso >= startISO && iso < todayISO;
+      const st = done ? "done" : missed ? "missed" : "";
+      const cls = ["cal-cell", st, iso === todayISO ? "today" : ""].filter(Boolean).join(" ");
       const style = day === 1 ? ` style="grid-column-start:${startDow + 1}"` : "";
       cells += `<button class="${cls}"${style} data-date="${iso}" ${done ? "" : "disabled"}>${day}</button>`;
     }
@@ -698,7 +702,10 @@
         </div>
         <div class="cal-grid cal-dows">${dows.map((d) => `<span>${d}</span>`).join("")}</div>
         <div class="cal-grid cal-days">${cells}</div>
-        <div class="cal-legend"><span class="dot"></span> Dia com treino finalizado</div>
+        <div class="cal-legend">
+          <span class="leg"><span class="dot"></span> Treino feito</span>
+          <span class="leg"><span class="dot red"></span> Sem treino</span>
+        </div>
       </div>
       <p class="muted small center">${total} treino(s) finalizado(s) no total</p>`,
       { active: "agenda" }
