@@ -193,14 +193,14 @@ textarea.input, textarea.form-input { min-height: 70px; resize: vertical; }
 .login-form.active { display: block; }
 .role-cards { display: flex; gap: 10px; margin-bottom: 16px; }
 .role-card {
-  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px;
-  padding: 16px 10px; border-radius: 15px; border: 1.5px solid var(--stroke);
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px;
+  padding: 10px 8px; border-radius: 13px; border: 1.5px solid var(--stroke);
   background: var(--glass-input); color: var(--text2); cursor: pointer;
   transition: transform .15s, border-color .18s, background .18s, color .18s, box-shadow .18s;
 }
 .role-card .role-ic { display: flex; }
-.role-card .role-ic svg { width: 30px; height: 30px; }
-.role-card .role-name { font-weight: 700; font-size: .95rem; }
+.role-card .role-ic svg { width: 20px; height: 20px; }
+.role-card .role-name { font-weight: 700; font-size: .85rem; }
 .role-card.active { border-color: transparent; background: var(--grad); color: #fff; box-shadow: 0 8px 20px rgba(0, 210, 106, .3); transform: translateY(-1px); }
 .role-card:active { transform: scale(.97); }
 
